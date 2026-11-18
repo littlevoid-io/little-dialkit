@@ -36,5 +36,8 @@
     "vite": "^8.3.8",
     "vitest": "^5.1.1",
     "zundo": "^2.3.0"
+  },
+  "overrides": {
+    "proxy-agent": "^8.0.3"
   }
 }
