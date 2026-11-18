@@ -16,13 +16,14 @@ Library that adds mapping curves, undo and persisted folder state to DialKit (`d
 - **Position vs value:** `value = min + curve(position) * (max - min)`. The store clamps and snaps the value to the step. `CurveModel` keeps a dragged position while the store still holds the value it produced, and inverts the curve otherwise (version load, typed value, curve change, undo).
 - **Curves:** all rise from 0 to 1, so `invert` is a bisection. Adding a curve that is not monotonic needs a different inverse.
 - **Undo:** `Undo` records the store's flat values (actions removed) on every store change into `EditHistory` (zustand + zundo). Changes within 400 ms form one step. Restoring writes through `DialStore.updateValues`. A version switch is recorded as a step like any other change.
+- **Toolbar row:** the versions menu and the undo / redo buttons share an own `.little-toolbar` flex element inside DialKit's shell toolbar, so no DialKit class is restyled. The buttons follow `Undo.subscribe` (zundo's temporal store), which covers changes, undo, redo and steps restored from sessionStorage.
 - **Fixed structure:** controls are built once from the panel's control tree. `updateConfig` with a different structure is not reflected.
 
 ## Code map
 
 | File | Role |
 |---|---|
-| `src/panel.ts` | `Panel`: kit, root element, shell folder, versions menu, tree, undo |
+| `src/panel.ts` | `Panel`: kit, root element, shell folder, toolbar row (versions menu, history buttons), tree, undo |
 | `src/controlTree.ts` | Walks DialKit's `ControlMeta` tree: folders, curve rows, native controls via `mountControlRenderer` |
 | `src/curveConfig.ts` | `curve()` config helper, `isCurve` |
 | `src/curveModel.ts` | Store access and position for one curve parameter |
@@ -30,7 +31,8 @@ Library that adds mapping curves, undo and persisted folder state to DialKit (`d
 | `src/curvePicker.ts` | Curve button and popover grid (families across, variants down, linear in the corner) |
 | `src/curves.ts` | Curve table, `evaluate`, `invert` |
 | `src/folderState.ts` | Folder open state by control path |
-| `src/undo.ts`, `src/history.ts` | Undo binding and history store |
+| `src/undo.ts`, `src/history.ts` | Undo binding and history store; `canUndo`, `canRedo`, `subscribe` expose availability |
+| `src/historyButtons.ts` | Undo / redo icon buttons, disabled by availability |
 | `src/styles.css` | Styles for own elements only |
 | `demo/main.ts`, `index.html` | Demo page for `npm run dev` |
 
@@ -50,11 +52,10 @@ Library that adds mapping curves, undo and persisted folder state to DialKit (`d
 
 ## Verification
 
-- Unit tests cover `curves.ts` and `history.ts`. There are no DOM tests.
+- Unit tests cover `curves.ts` and `history.ts` (including availability and subscriptions). There are no DOM tests.
 - Check UI changes on the demo page. Automated drag-and-drop helpers do not send `pointermove` / `pointerup` to the slider; dispatch pointer events or drag by hand.
 
 ## Not built yet
 
 - Preset stores beyond DialKit's own storage: file export / import, writing defaults through a dev-server helper
 - Floating, draggable panel shell (the panel is docked into `target`)
-- Undo / redo buttons in the panel

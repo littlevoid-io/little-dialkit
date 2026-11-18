@@ -3,7 +3,7 @@
 Additions to [DialKit](https://github.com/joshpuckett/dialkit) panels in plain TypeScript:
 
 - Mapping curves: a slider whose position maps to its value through a selectable easing curve
-- Undo / redo of value changes
+- Undo / redo of value changes, with buttons next to the versions menu
 - Folders that stay open or closed across reloads
 - A docked panel built from DialKit's own controls, store, versions and persistence
 
@@ -34,7 +34,7 @@ panel.kit.subscribe((values) => {
 
 - The config is a DialKit config. `curve([default, min, max, step?], name?)` stands in for a slider.
 - `panel.kit` is DialKit's controller: `getValues`, `setValues`, `subscribe`, `resetValues`.
-- `panel.history.undo()` and `panel.history.redo()`; Ctrl+Z, Ctrl+Shift+Z and Ctrl+Y (Cmd on macOS).
+- `panel.history.undo()` and `panel.history.redo()`; `canUndo` and `canRedo` tell whether a step is left, `subscribe(listener)` reports changes; Ctrl+Z, Ctrl+Shift+Z and Ctrl+Y (Cmd on macOS).
 - `panel.destroy()` removes the panel and its listeners.
 - Curves: `linear`, and `quad`, `cubic`, `quart`, `quint` as `In`, `Out`, `InOut`, `OutIn` (for example `quartOutIn`).
 

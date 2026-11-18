@@ -115,8 +115,17 @@
   color: var(--little-text-strong);
 }
 
-/* Curve button and its icon */
-.little-curve-button {
+/* Toolbar row: the versions menu takes the width the history buttons leave. */
+.little-toolbar {
+  display: flex;
+  gap: var(--little-row-gap);
+  width: 100%;
+  min-width: 0;
+}
+
+/* Curve and history buttons, and their icons */
+.little-curve-button,
+.little-history-button {
   flex: none;
   display: grid;
   place-items: center;
@@ -131,9 +140,31 @@
   transition: background 0.15s, color 0.15s;
 }
 
-.little-curve-button:hover {
+.little-curve-button:hover,
+.little-history-button:hover:enabled {
   color: var(--little-text-strong);
   background: var(--little-surface-hover);
+}
+
+.little-history-button:disabled {
+  color: var(--little-text-faint);
+  cursor: default;
+  opacity: 0.4;
+}
+
+.little-history-button:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 1px var(--little-focus-ring);
+}
+
+.little-history-icon {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .little-curve-button[data-mapped] {

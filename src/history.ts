@@ -55,12 +55,25 @@ export class EditHistory<T extends object> {
 
   /** The previous values, or undefined at the first step. */
   public undo(): T | undefined {
-    return this.step(this.store.temporal.getState().pastStates.length > 0, () => this.store.temporal.getState().undo());
+    return this.step(this.canUndo, () => this.store.temporal.getState().undo());
   }
 
   /** The values before the last undo, or undefined after the last step. */
   public redo(): T | undefined {
-    return this.step(this.store.temporal.getState().futureStates.length > 0, () => this.store.temporal.getState().redo());
+    return this.step(this.canRedo, () => this.store.temporal.getState().redo());
+  }
+
+  public get canUndo(): boolean {
+    return this.store.temporal.getState().pastStates.length > 0;
+  }
+
+  public get canRedo(): boolean {
+    return this.store.temporal.getState().futureStates.length > 0;
+  }
+
+  /** Calls the listener after every change of the steps: record, undo, redo. Returns the unsubscribe function. */
+  public subscribe(listener: () => void): () => void {
+    return this.store.temporal.subscribe(listener);
   }
 
   /** Ends the current burst: the next change after an undo or redo is a step of its own. */

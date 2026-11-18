@@ -51,4 +51,34 @@ describe('EditHistory', () => {
     createHistory(1).record({ value: 2 });
     expect(createHistory(2).undo()?.value).toBe(1);
   });
+
+  it('reports whether there is a step to undo or redo', () => {
+    const history = createHistory(1);
+    expect([history.canUndo, history.canRedo]).toEqual([false, false]);
+    history.record({ value: 2 });
+    expect([history.canUndo, history.canRedo]).toEqual([true, false]);
+    history.undo();
+    expect([history.canUndo, history.canRedo]).toEqual([false, true]);
+    history.record({ value: 3 });
+    expect([history.canUndo, history.canRedo]).toEqual([true, false]);
+  });
+
+  it('notifies subscribers of record, undo and redo until they unsubscribe', () => {
+    const history = createHistory(1);
+    const listener = vi.fn();
+    const unsubscribe = history.subscribe(listener);
+    history.record({ value: 2 });
+    history.undo();
+    history.redo();
+    expect(listener).toHaveBeenCalledTimes(3);
+    unsubscribe();
+    history.undo();
+    expect(listener).toHaveBeenCalledTimes(3);
+  });
+
+  it('reports the steps restored from sessionStorage', () => {
+    createHistory(1).record({ value: 2 });
+    const history = createHistory(2);
+    expect([history.canUndo, history.canRedo]).toEqual([true, false]);
+  });
 });

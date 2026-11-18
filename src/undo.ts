@@ -31,6 +31,19 @@ export class Undo {
     this.restore(this.history.redo());
   }
 
+  public get canUndo(): boolean {
+    return this.history.canUndo;
+  }
+
+  public get canRedo(): boolean {
+    return this.history.canRedo;
+  }
+
+  /** Calls the listener when `canUndo` or `canRedo` may have changed. Returns the unsubscribe function. */
+  public subscribe(listener: () => void): () => void {
+    return this.history.subscribe(listener);
+  }
+
   public destroy(): void {
     this.stop();
     window.removeEventListener('keydown', this.key);

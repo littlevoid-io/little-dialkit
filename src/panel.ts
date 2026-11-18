@@ -5,6 +5,7 @@ import {
 import { ControlTree } from './controlTree';
 import { element } from './dom';
 import { FolderState } from './folderState';
+import { HistoryButtons } from './historyButtons';
 import { Undo } from './undo';
 
 export interface PanelOptions extends CreateDialOptions {
@@ -25,6 +26,7 @@ export class Panel<Config extends DialConfig> {
   private readonly shell: ReturnType<typeof mountFolder>;
   private readonly versions: ReturnType<typeof mountPresetManager>;
   private readonly tree: ControlTree;
+  private readonly buttons: HistoryButtons;
   private readonly stop: () => void;
 
   /** The controls are built once: the config's structure is fixed for the life of the panel. */
@@ -35,14 +37,18 @@ export class Panel<Config extends DialConfig> {
     this.root.dataset.theme = theme;
     target.append(this.root);
     this.shell = mountFolder(this.root, { title: name, isRoot: true, inline: true });
-    this.versions = mountPresetManager(this.shell.toolbar, this.versionProps());
+    const toolbar = element('div', 'little-toolbar');
+    this.shell.toolbar.append(toolbar);
+    this.versions = mountPresetManager(toolbar, this.versionProps());
     this.tree = new ControlTree(id, new FolderState(`little-dialkit:${id}:folders`), this.controls(), this.shell.body);
     this.history = new Undo(id, `little-dialkit:${id}:history`);
+    this.buttons = new HistoryButtons(toolbar, this.history);
     this.stop = DialStore.subscribe(id, () => this.render());
   }
 
   public destroy(): void {
     this.stop();
+    this.buttons.destroy();
     this.history.destroy();
     this.tree.destroy();
     this.versions.destroy();
