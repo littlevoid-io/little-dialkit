@@ -1,28 +1,23 @@
 import {
-  createDialKit, type CreateDialOptions, type DialConfig, type DialKitController, DialStore, type DialTheme,
+  createDialKit, type DialConfig, type DialKitController, DialStore,
   mountFolder, mountPresetManager, mountShortcutListener, type PresetManagerProps,
 } from 'dialkit/vanilla';
 import { ControlTree } from './controlTree';
 import { element } from './dom';
+import { FloatingShell } from './floatingShell';
 import { FolderState } from './folderState';
 import { HistoryButtons } from './historyButtons';
+import type { PanelOptions } from './panelOptions';
 import { Undo } from './undo';
 
-export interface PanelOptions extends CreateDialOptions {
-  /** Names the panel in DialKit's store and in the storage keys. */
-  id: string;
-  /** The element the panel is docked into. */
-  target: HTMLElement;
-  theme?: DialTheme;
-}
-
-/** A docked DialKit panel with curve rows, undo and folders that stay open or closed across reloads. */
+/** A DialKit panel, docked or floating, with curve rows, undo and folders that stay open or closed across reloads. */
 export class Panel<Config extends DialConfig> {
   /** DialKit's controller: values, subscriptions and versions. */
   public readonly kit: DialKitController<Config>;
   public readonly history: Undo;
   private readonly root = element('div', 'dialkit-root little-dialkit');
   private readonly shortcuts = mountShortcutListener();
+  private readonly floating: FloatingShell | undefined;
   private readonly shell: ReturnType<typeof mountFolder>;
   private readonly versions: ReturnType<typeof mountPresetManager>;
   private readonly tree: ControlTree;
@@ -31,12 +26,12 @@ export class Panel<Config extends DialConfig> {
 
   /** The controls are built once: the config's structure is fixed for the life of the panel. */
   constructor(name: string, config: Config, options: PanelOptions) {
-    const { target, theme = 'system', ...dial } = options;
-    const { id } = options;
-    this.kit = createDialKit(name, config, dial);
+    const { id, theme = 'system' } = options;
+    this.kit = createDialKit(name, config, options);
     this.root.dataset.theme = theme;
-    target.append(this.root);
-    this.shell = mountFolder(this.root, { title: name, isRoot: true, inline: true });
+    (options.target ?? document.body).append(this.root);
+    this.floating = options.mode === 'popover' ? new FloatingShell(this.root, this.kit, name, options) : undefined;
+    this.shell = this.floating?.folder ?? mountFolder(this.root, { title: name, isRoot: true, inline: true });
     const toolbar = element('div', 'little-toolbar');
     this.shell.toolbar.append(toolbar);
     this.versions = mountPresetManager(toolbar, this.versionProps());
@@ -52,6 +47,7 @@ export class Panel<Config extends DialConfig> {
     this.history.destroy();
     this.tree.destroy();
     this.versions.destroy();
+    this.floating?.destroy();
     this.shell.destroy();
     this.shortcuts.destroy();
     this.root.remove();
@@ -70,6 +66,7 @@ export class Panel<Config extends DialConfig> {
   }
 
   private render(): void {
+    this.floating?.update();
     this.tree.update();
     this.versions.update(this.versionProps());
   }

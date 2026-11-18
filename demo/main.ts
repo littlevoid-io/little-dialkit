@@ -1,7 +1,10 @@
 import 'dialkit/vanilla/styles.css';
 import '../src/styles.css';
-import type { DialConfig } from 'dialkit/vanilla';
+import type { DialConfig, DialPosition } from 'dialkit/vanilla';
 import { curve, Panel } from '../src';
+
+const ID = 'little-dialkit-demo';
+const CORNERS: DialPosition[] = ['top-right', 'top-left', 'bottom-right', 'bottom-left'];
 
 const config = {
   blur: {
@@ -26,15 +29,25 @@ const target = document.querySelector<HTMLElement>('#panel');
 const output = document.querySelector<HTMLElement>('#values');
 if (!target || !output) throw new Error('Demo page is missing #panel or #values');
 
-const panel = new Panel('Demo', config, {
-  id: 'little-dialkit-demo',
-  target,
+// `?docked` docks the panel into #panel; `?position=<corner>` starts the floating panel there and forgets a saved position.
+const params = new URLSearchParams(location.search);
+const docked = params.has('docked');
+const position = CORNERS.find((corner) => corner === params.get('position'));
+if (position) localStorage.removeItem(`little-dialkit:${ID}:shell`);
+target.hidden = !docked;
+
+const shared = {
+  id: ID,
   theme: 'dark',
   persist: true,
-  onAction: (action) => {
+  onAction: (action: string) => {
     if (action === 'reset') panel.kit.resetValues();
   },
-});
+} as const;
+
+const panel = new Panel('Demo', config, docked
+  ? { ...shared, target }
+  : { ...shared, mode: 'popover', position });
 
 panel.kit.subscribe((values) => {
   output.textContent = JSON.stringify(values, null, 2);

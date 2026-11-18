@@ -1,6 +1,6 @@
 # little-dialkit
 
-Library that adds mapping curves, undo and persisted folder state to DialKit (`dialkit/vanilla`). Setup and commands: [README.md](README.md).
+Library that adds mapping curves, undo, persisted folder state and a floating shell to DialKit (`dialkit/vanilla`). Setup and commands: [README.md](README.md).
 
 ## Rules
 
@@ -17,13 +17,20 @@ Library that adds mapping curves, undo and persisted folder state to DialKit (`d
 - **Curves:** all rise from 0 to 1, so `invert` is a bisection. Adding a curve that is not monotonic needs a different inverse.
 - **Undo:** `Undo` records the store's flat values (actions removed) on every store change into `EditHistory` (zustand + zundo). Changes within 400 ms form one step. Restoring writes through `DialStore.updateValues`. A version switch is recorded as a step like any other change.
 - **Toolbar row:** the versions menu and the undo / redo buttons share an own `.little-toolbar` flex element inside DialKit's shell toolbar, so no DialKit class is restyled. The buttons follow `Undo.subscribe` (zundo's temporal store), which covers changes, undo, redo and steps restored from sessionStorage.
+- **Floating shell:** `mode: 'popover'` (DialKit's name; docked is the default so existing `target` setups keep working). DialKit's non-inline root folder is the shell and provides size, look, scrolling (max height, `overflow-y`) and the collapse to an icon through `open`, `onOpenChange`. Open state lives in `DialStore` (`kit.getOpen` / `kit.setOpen`), so outside callers and the folder's own toggle meet there. Own code covers what DialKit does not export: corner placement and margin (`.little-floating`, `data-position`), the header drag, clamping, persistence.
+- **Drag model (mirrors DialKit's panel):** a press travelling 8 px drags; the panel keeps the dropped position (no snap on release); collapsing keeps the position; opening from the icon snaps to the corner nearest the icon's center. DialKit's header class is not used: a press starts a drag when it lies on the folder's `element` but not in `body` or `toolbar` (any point when collapsed). Pointer capture starts only after the threshold, so a plain click still reaches the header. The click that ends a drag is blocked. Differences: the whole panel is kept inside the viewport with an 8 px edge (DialKit keeps 42 px grabbable), no Escape to cancel, no memory of the last dragged position for the icon.
 - **Fixed structure:** controls are built once from the panel's control tree. `updateConfig` with a different structure is not reflected.
 
 ## Code map
 
 | File | Role |
 |---|---|
-| `src/panel.ts` | `Panel`: kit, root element, shell folder, toolbar row (versions menu, history buttons), tree, undo |
+| `src/panel.ts` | `Panel`: kit, root element, shell folder (docked or `FloatingShell`), toolbar row (versions menu, history buttons), tree, undo |
+| `src/panelOptions.ts` | `PanelOptions`: `DockedOptions` or `FloatingOptions`, typed from DialKit's `DialRootOptions` |
+| `src/floatingShell.ts` | Floating shell: corner / dragged position, open sync with `DialStore`, persistence, keep inside viewport |
+| `src/panelDrag.ts` | Pointer gesture: threshold, capture, click blocking after a drag |
+| `src/placement.ts` | Pure clamping and nearest-corner maths |
+| `src/shellState.ts` | Persisted open state, corner and offset |
 | `src/controlTree.ts` | Walks DialKit's `ControlMeta` tree: folders, curve rows, native controls via `mountControlRenderer` |
 | `src/curveConfig.ts` | `curve()` config helper, `isCurve` |
 | `src/curveModel.ts` | Store access and position for one curve parameter |
@@ -42,6 +49,7 @@ Library that adds mapping curves, undo and persisted folder state to DialKit (`d
 |---|---|---|
 | `dialkit:<id>` | localStorage (DialKit, with `persist`) | Values and versions |
 | `little-dialkit:<id>:folders` | localStorage | `{ [folderPath]: open }` |
+| `little-dialkit:<id>:shell` | localStorage | Floating mode: `{ open, corner, offset }`; `offset` is null at the corner |
 | `little-dialkit:<id>:history` | sessionStorage | Undo and redo steps |
 
 ## Build
@@ -52,10 +60,9 @@ Library that adds mapping curves, undo and persisted folder state to DialKit (`d
 
 ## Verification
 
-- Unit tests cover `curves.ts` and `history.ts` (including availability and subscriptions). There are no DOM tests.
-- Check UI changes on the demo page. Automated drag-and-drop helpers do not send `pointermove` / `pointerup` to the slider; dispatch pointer events or drag by hand.
+- Unit tests cover `curves.ts`, `history.ts` (including availability and subscriptions) and `placement.ts`. There are no DOM tests.
+- Check UI changes on the demo page (`?docked`, `?position=<corner>`). Automated drag-and-drop helpers do not send `pointermove` / `pointerup` to the slider or the shell; dispatch pointer events or drag by hand.
 
 ## Not built yet
 
 - Preset stores beyond DialKit's own storage: file export / import, writing defaults through a dev-server helper
-- Floating, draggable panel shell (the panel is docked into `target`)

@@ -8,11 +8,22 @@
       body { display: flex; gap: 32px; margin: 0; padding: 24px; background: #161616; color: #999; }
       #panel { flex: none; width: 300px; }
       #values { margin: 0; font: 12px/1.5 monospace; }
+      nav { display: flex; flex-direction: column; gap: 4px; font: 12px/1.5 monospace; }
+      nav a { color: inherit; }
     </style>
   </head>
   <body>
     <div id="panel"></div>
-    <pre id="values"></pre>
+    <div>
+      <nav>
+        <a href="/">floating (default)</a>
+        <a href="/?docked">docked</a>
+        <a href="/?position=top-left">floating, top-left</a>
+        <a href="/?position=bottom-left">floating, bottom-left</a>
+        <a href="/?position=bottom-right">floating, bottom-right</a>
+      </nav>
+      <pre id="values"></pre>
+    </div>
     <script type="module" src="/demo/main.ts"></script>
   </body>
 </html>

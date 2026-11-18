@@ -16,6 +16,23 @@
   --little-menu-shadow: var(--dial-shadow-dropdown, 0 8px 24px rgba(0, 0, 0, 0.4));
 }
 
+/* Floating shell: fixed at a corner, or at the dragged position (inline coordinates). Size and look come from DialKit's root folder. */
+.little-dialkit.little-floating {
+  --little-float-margin: 16px;
+  position: fixed;
+  z-index: 9999;
+}
+
+.little-floating[data-position^='top'] { top: var(--little-float-margin); }
+.little-floating[data-position^='bottom'] { bottom: var(--little-float-margin); }
+.little-floating[data-position$='left'] { left: var(--little-float-margin); }
+.little-floating[data-position$='right'] { right: var(--little-float-margin); }
+
+.little-floating[data-dragging] {
+  cursor: grabbing;
+  user-select: none;
+}
+
 .little-curve-row {
   display: flex;
   gap: var(--little-row-gap);
