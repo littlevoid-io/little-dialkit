@@ -6,7 +6,10 @@ import { element, type Mounted } from './dom';
 /** Space between the row and the menu below it, in pixels. */
 const OFFSET = 4;
 
-/** Button on a curve row showing its curve, with a menu of all curves: families across, variants down. */
+/**
+ * Button on a curve row showing its curve, with a menu of all curves: families across, variants down.
+ * The menu has its options only while it is open: a panel holds many rows, and DialKit's thumbnail capture reads the style of every element.
+ */
 export class CurvePicker implements Mounted {
   private readonly button = element('button', 'little-curve-button');
   private readonly menu = element('div', 'little-curve-menu');
@@ -17,8 +20,7 @@ export class CurvePicker implements Mounted {
     this.button.type = 'button';
     this.button.popoverTargetElement = this.menu;
     this.menu.popover = 'auto';
-    this.menu.addEventListener('beforetoggle', () => this.place());
-    this.fill();
+    this.menu.addEventListener('beforetoggle', (event) => this.toggle(event.newState === 'open'));
     row.append(this.button, this.menu);
     this.update();
   }
@@ -30,12 +32,25 @@ export class CurvePicker implements Mounted {
     this.button.replaceChildren(curveIcon(curve));
     this.button.title = `Curve: ${curve}`;
     this.button.toggleAttribute('data-mapped', curve !== 'linear');
-    for (const [name, option] of this.options) option.toggleAttribute('data-active', name === curve);
+    this.mark();
   }
 
   public destroy(): void {
     this.button.remove();
     this.menu.remove();
+  }
+
+  private toggle(open: boolean): void {
+    this.menu.replaceChildren();
+    this.options.clear();
+    if (!open) return;
+    this.fill();
+    this.mark();
+    this.place();
+  }
+
+  private mark(): void {
+    for (const [name, option] of this.options) option.toggleAttribute('data-active', name === this.model.curve);
   }
 
   /** Linear takes the corner of the grid. */

@@ -26,10 +26,15 @@ class NativeControl implements Mounted {
   }
 }
 
-/** The controls of a panel: DialKit folders and controls, with curve rows for the `curve()` pairs. */
+/**
+ * The controls of a panel: DialKit folders and controls, with curve rows for the `curve()` pairs.
+ * A folder's controls are built when it is first opened: DialKit's thumbnail capture reads the style of every element, closed folders included.
+ */
 export class ControlTree implements Mounted {
   private readonly controls: Mounted[] = [];
   private readonly folders: Pick<Mounted, 'destroy'>[] = [];
+  /** Paths of the folders whose controls exist. */
+  private readonly built = new Set<string>();
 
   /** `labels`: by control path, in place of the labels DialKit derives from the keys. */
   constructor(
@@ -61,12 +66,17 @@ export class ControlTree implements Mounted {
   }
 
   private folder(meta: ControlMeta, host: HTMLElement): void {
-    const folder = mountFolder(host, {
-      title: meta.label,
-      defaultOpen: this.folderState.isOpen(meta.path, meta.defaultOpen ?? true),
-      onOpenChange: (open) => this.folderState.set(meta.path, open),
-    });
+    const open = this.folderState.isOpen(meta.path, meta.defaultOpen ?? true);
+    const folder = mountFolder(host, { title: meta.label, defaultOpen: open, onOpenChange: (next) => this.folderState.set(meta.path, next) });
     this.folders.push(folder);
-    this.build(meta.children ?? [], folder.body);
+    if (open) this.fill(meta, folder.body);
+    // Capture phase: before DialKit's own handlers open the folder and measure its content for the animation.
+    for (const type of ['click', 'keydown']) folder.element.addEventListener(type, () => this.fill(meta, folder.body), { capture: true });
+  }
+
+  private fill(meta: ControlMeta, body: HTMLElement): void {
+    if (this.built.has(meta.path)) return;
+    this.built.add(meta.path);
+    this.build(meta.children ?? [], body);
   }
 }
