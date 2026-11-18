@@ -31,7 +31,14 @@ export class ControlTree implements Mounted {
   private readonly controls: Mounted[] = [];
   private readonly folders: Pick<Mounted, 'destroy'>[] = [];
 
-  constructor(private readonly panelId: string, private readonly folderState: FolderState, controls: ControlMeta[], host: HTMLElement) {
+  /** `labels`: by control path, in place of the labels DialKit derives from the keys. */
+  constructor(
+    private readonly panelId: string,
+    private readonly folderState: FolderState,
+    private readonly labels: Record<string, string>,
+    controls: ControlMeta[],
+    host: HTMLElement,
+  ) {
     this.build(controls, host);
   }
 
@@ -45,7 +52,8 @@ export class ControlTree implements Mounted {
   }
 
   private build(controls: ControlMeta[], host: HTMLElement): void {
-    for (const meta of controls) {
+    for (const control of controls) {
+      const meta = { ...control, label: this.labels[control.path] ?? control.label };
       if (isCurve(meta)) this.controls.push(new CurveRow(host, new CurveModel(this.panelId, meta)));
       else if (meta.type === 'folder') this.folder(meta, host);
       else this.controls.push(new NativeControl(host, this.panelId, meta));

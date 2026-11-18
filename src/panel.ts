@@ -17,6 +17,8 @@ export class Panel<Config extends DialConfig> {
   /** DialKit's controller: values, subscriptions and versions. */
   public readonly kit: DialKitController<Config>;
   public readonly history: Undo;
+  /** Above the controls, below the versions: for rows of the page's own, such as DialKit's `mountSlider`. Not part of values, versions or undo. */
+  public readonly slot = element('div', 'little-slot');
   private readonly root = element('div', 'dialkit-root little-dialkit');
   private readonly shortcuts = mountShortcutListener();
   private readonly floating: FloatingShell | undefined;
@@ -28,7 +30,7 @@ export class Panel<Config extends DialConfig> {
 
   /** The controls are built once: the config's structure is fixed for the life of the panel. */
   constructor(name: string, config: Config, options: PanelOptions) {
-    const { id, theme = 'system', versions = 'thumbnails' } = options;
+    const { id, theme = 'system', versions = 'thumbnails', labels = {} } = options;
     this.kit = createDialKit(name, config, options);
     this.root.dataset.theme = theme;
     (options.target ?? document.body).append(this.root);
@@ -36,8 +38,10 @@ export class Panel<Config extends DialConfig> {
     this.shell = this.floating?.folder ?? mountFolder(this.root, { title: name, isRoot: true, inline: true });
     const toolbar = element('div', 'little-toolbar');
     this.shell.toolbar.append(toolbar);
-    this.versions = new Versions(id, versions, theme, toolbar, this.shell.body);
-    this.tree = new ControlTree(id, new FolderState(`little-dialkit:${id}:folders`), this.controls(), this.shell.body);
+    const folders = new FolderState(`little-dialkit:${id}:folders`);
+    this.versions = new Versions(id, versions, theme, toolbar, this.shell.body, folders);
+    this.shell.body.append(this.slot);
+    this.tree = new ControlTree(id, folders, labels, this.controls(), this.shell.body);
     this.history = new Undo(id, `little-dialkit:${id}:history`);
     this.buttons = new HistoryButtons(toolbar, this.history);
     this.stop = DialStore.subscribe(id, () => this.render());

@@ -37,7 +37,9 @@ panel.kit.subscribe((values) => {
 - The config is a DialKit config. `curve([default, min, max, step?], name?)` stands in for a slider.
 - `panel.kit` is DialKit's controller: `getValues`, `setValues`, `subscribe`, `resetValues`.
 - `panel.history.undo()` and `panel.history.redo()`; `canUndo` and `canRedo` tell whether a step is left, `subscribe(listener)` reports changes; Ctrl+Z, Ctrl+Shift+Z and Ctrl+Y (Cmd on macOS).
-- `versions: 'menu'` shows the versions as a menu. The default is DialKit's thumbnail gallery: double-click a name to rename.
+- `versions: 'menu'` shows the versions as a menu. The default is DialKit's thumbnail gallery in a folder named after the selected version; it starts closed. Double-click a name to rename.
+- `labels: { 'blur.radius': 'Radius (px)' }` sets labels by control path; DialKit derives the others from the keys.
+- `panel.slot` is an element above the controls for rows of your own (for example DialKit's `mountSlider`); they are not part of values, versions or undo.
 - `panel.destroy()` removes the panel and its listeners.
 - Curves: `linear`, and `quad`, `cubic`, `quart`, `quint` as `In`, `Out`, `InOut`, `OutIn` (for example `quartOutIn`).
 

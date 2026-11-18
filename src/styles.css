@@ -141,6 +141,11 @@
   min-width: 0;
 }
 
+/* The slot's rows are rows of the panel. */
+.little-slot {
+  display: contents;
+}
+
 /* Curve and history buttons, and their icons */
 .little-curve-button,
 .little-history-button {
