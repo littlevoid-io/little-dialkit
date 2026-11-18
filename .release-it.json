@@ -1,0 +1,16 @@
+{
+  "$schema": "https://unpkg.com/release-it@21/schema/release-it.json",
+  "hooks": {
+    "before:init": ["npm run check", "npm test"],
+    "after:bump": "npm run build"
+  },
+  "git": {
+    "requireBranch": "main",
+    "commitMessage": "chore: release v${version}",
+    "tagName": "v${version}"
+  },
+  "github": {
+    "release": true,
+    "releaseName": "v${version}"
+  }
+}

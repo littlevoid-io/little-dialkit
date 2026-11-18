@@ -102,12 +102,15 @@ The route accepts any request that reaches the dev server. Keep the server on lo
 | `npm run check` | Type check |
 | `npm test` | Unit tests |
 | `npm run build` | `dist/` with JS, types and `styles.css` |
+| `npm run release` | Prompt for the version, then commit, tag, push, publish to npm and create the GitHub release |
 
 ## Troubleshooting
 
 - **Panel renders twice:** do not call DialKit's `createDialRoot` on the same page. `Panel` is the root.
 - **Controls do not appear after `kit.updateConfig`:** the panel builds its controls once. Create a new `Panel` for a different structure.
 - **`position` has no effect:** a stored position wins. Delete `little-dialkit:<id>:shell` from localStorage.
+- **Release stops at npm:** run `npm login` first.
+- **GitHub release opens in the browser:** set `GITHUB_TOKEN` (for example from `gh auth token`) to create it without the browser.
 - **Unstyled panel:** import both stylesheets, DialKit's first.
 
 See [AGENTS.md](AGENTS.md) for architecture and conventions.

@@ -63,6 +63,12 @@ Library that adds mapping curves, undo, persisted folder state and a floating sh
 - zundo imports `createStore` from the zustand root, which loads the React bindings. The build aliases `zustand` to `zustand/vanilla` and bundles zundo, so consumers need no alias. zundo is a dev dependency for that reason.
 - `dialkit` is a peer dependency. `zustand` and `es-toolkit` are dependencies and stay external.
 
+## Release
+
+- `npm run release` runs release-it with `.release-it.json`: type check and tests, version prompt, build, commit `chore: release v<version>`, tag `v<version>`, push, `npm publish`, GitHub release with the commit list as notes.
+- Requires branch `main`, a clean working tree, an upstream and `npm login`. Without `GITHUB_TOKEN` the GitHub release is a prefilled browser form.
+- `npm run release -- --no-increment` releases the version in `package.json` as is (first release: 0.1.0). `--dry-run` shows the steps without changes.
+
 ## Verification
 
 - Unit tests cover `curves.ts`, `history.ts` (including availability and subscriptions) `placement.ts` and `versionData.ts` (against DialKit's real store). There are no DOM tests.
