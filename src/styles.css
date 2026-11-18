@@ -132,10 +132,11 @@
   color: var(--little-text-strong);
 }
 
-/* Toolbar row: the versions menu takes the width the history buttons leave. */
+/* Toolbar row: a versions menu takes the width the history buttons leave. */
 .little-toolbar {
   display: flex;
   gap: var(--little-row-gap);
+  justify-content: flex-end;
   width: 100%;
   min-width: 0;
 }

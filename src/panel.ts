@@ -1,6 +1,6 @@
 import {
   createDialKit, type DialConfig, type DialKitController, DialStore,
-  mountFolder, mountPresetManager, mountShortcutListener, type PresetManagerProps,
+  mountFolder, mountShortcutListener,
 } from 'dialkit/vanilla';
 import { ControlTree } from './controlTree';
 import { element } from './dom';
@@ -9,6 +9,8 @@ import { FolderState } from './folderState';
 import { HistoryButtons } from './historyButtons';
 import type { PanelOptions } from './panelOptions';
 import { Undo } from './undo';
+import { exportVersions, importVersions, type VersionData } from './versionData';
+import { Versions } from './versions';
 
 /** A DialKit panel, docked or floating, with curve rows, undo and folders that stay open or closed across reloads. */
 export class Panel<Config extends DialConfig> {
@@ -19,14 +21,14 @@ export class Panel<Config extends DialConfig> {
   private readonly shortcuts = mountShortcutListener();
   private readonly floating: FloatingShell | undefined;
   private readonly shell: ReturnType<typeof mountFolder>;
-  private readonly versions: ReturnType<typeof mountPresetManager>;
+  private readonly versions: Versions;
   private readonly tree: ControlTree;
   private readonly buttons: HistoryButtons;
   private readonly stop: () => void;
 
   /** The controls are built once: the config's structure is fixed for the life of the panel. */
   constructor(name: string, config: Config, options: PanelOptions) {
-    const { id, theme = 'system' } = options;
+    const { id, theme = 'system', versions = 'thumbnails' } = options;
     this.kit = createDialKit(name, config, options);
     this.root.dataset.theme = theme;
     (options.target ?? document.body).append(this.root);
@@ -34,11 +36,21 @@ export class Panel<Config extends DialConfig> {
     this.shell = this.floating?.folder ?? mountFolder(this.root, { title: name, isRoot: true, inline: true });
     const toolbar = element('div', 'little-toolbar');
     this.shell.toolbar.append(toolbar);
-    this.versions = mountPresetManager(toolbar, this.versionProps());
+    this.versions = new Versions(id, versions, theme, toolbar, this.shell.body);
     this.tree = new ControlTree(id, new FolderState(`little-dialkit:${id}:folders`), this.controls(), this.shell.body);
     this.history = new Undo(id, `little-dialkit:${id}:history`);
     this.buttons = new HistoryButtons(toolbar, this.history);
     this.stop = DialStore.subscribe(id, () => this.render());
+  }
+
+  /** All versions as plain data, for a file or a request body. Edits on the selected version become part of it. */
+  public exportVersions(): VersionData {
+    return this.history.suspend(() => exportVersions(this.kit.id));
+  }
+
+  /** Replaces all versions. The change is one undo step of the visible values; the versions themselves are not undone. */
+  public importVersions(data: VersionData): void {
+    this.history.suspend(() => importVersions(this.kit.id, data));
   }
 
   public destroy(): void {
@@ -60,14 +72,9 @@ export class Panel<Config extends DialConfig> {
     return panel.controls;
   }
 
-  private versionProps(): PresetManagerProps {
-    const { id } = this.kit;
-    return { panelId: id, presets: DialStore.getPresets(id), activePresetId: DialStore.getActivePresetId(id) };
-  }
-
   private render(): void {
     this.floating?.update();
     this.tree.update();
-    this.versions.update(this.versionProps());
+    this.versions.update();
   }
 }

@@ -1,11 +1,6 @@
-import { DialStore, type DialValue } from 'dialkit/vanilla';
+import { DialStore } from 'dialkit/vanilla';
 import { EditHistory } from './history';
-
-type Values = Record<string, DialValue>;
-
-function isAction(value: DialValue): boolean {
-  return typeof value === 'object' && 'type' in value && value.type === 'action';
-}
+import { type Values, withoutActions } from './values';
 
 function isEditable(target: EventTarget | null): boolean {
   return target instanceof HTMLElement && (target.isContentEditable || target.matches('input, textarea, select'));
@@ -15,7 +10,7 @@ function isEditable(target: EventTarget | null): boolean {
 export class Undo {
   private readonly history: EditHistory<Values>;
   private readonly stop: () => void;
-  private restoring = false;
+  private suspended = false;
 
   constructor(private readonly panelId: string, storageKey: string) {
     this.history = new EditHistory(this.snapshot(), storageKey);
@@ -44,25 +39,32 @@ export class Undo {
     return this.history.subscribe(listener);
   }
 
+  /** Runs store changes that are not undo steps of their own; what they leave behind is recorded as one step. */
+  public suspend<Result>(run: () => Result): Result {
+    this.suspended = true;
+    try {
+      return run();
+    } finally {
+      this.suspended = false;
+      this.record();
+    }
+  }
+
   public destroy(): void {
     this.stop();
     window.removeEventListener('keydown', this.key);
   }
 
-  /** The values by path, without action buttons. */
   private snapshot(): Values {
-    return Object.fromEntries(Object.entries(DialStore.getValues(this.panelId)).filter(([, value]) => !isAction(value)));
+    return withoutActions(DialStore.getValues(this.panelId));
   }
 
   private record(): void {
-    if (!this.restoring) this.history.record(this.snapshot());
+    if (!this.suspended) this.history.record(this.snapshot());
   }
 
   private restore(values: Values | undefined): void {
-    if (!values) return;
-    this.restoring = true;
-    DialStore.updateValues(this.panelId, values);
-    this.restoring = false;
+    if (values) this.suspend(() => DialStore.updateValues(this.panelId, values));
   }
 
   private readonly key = (event: KeyboardEvent): void => {

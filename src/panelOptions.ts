@@ -1,9 +1,11 @@
-import type { CreateDialOptions, DialMode, DialRootOptions, DialTheme } from 'dialkit/vanilla';
+import type { CreateDialOptions, DialMode, DialRootOptions, DialTheme, DialVersions } from 'dialkit/vanilla';
 
 interface CommonOptions extends CreateDialOptions {
   /** Names the panel in DialKit's store and in the storage keys. */
   id: string;
   theme?: DialTheme;
+  /** How saved versions appear: thumbnails above the controls (default), or a menu in the toolbar. */
+  versions?: DialVersions;
 }
 
 /** A panel docked into `target`, always open. */
