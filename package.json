@@ -1,0 +1,38 @@
+{
+  "name": "little-dialkit",
+  "version": "0.1.0",
+  "description": "Mapping curves, undo and persisted folders for DialKit panels",
+  "license": "MIT",
+  "type": "module",
+  "repository": "github:littlevoid-io/little-dialkit",
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./styles.css": "./dist/styles.css"
+  },
+  "scripts": {
+    "dev": "vite",
+    "check": "tsc",
+    "test": "vitest run",
+    "build": "vite build && tsc -p tsconfig.build.json && node -e \"fs.copyFileSync('src/styles.css', 'dist/styles.css')\""
+  },
+  "peerDependencies": {
+    "dialkit": "^2.2.1"
+  },
+  "dependencies": {
+    "es-toolkit": "^1.53.2",
+    "zustand": "^5.1.0"
+  },
+  "devDependencies": {
+    "dialkit": "^2.2.1",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.8",
+    "vitest": "^5.1.1",
+    "zundo": "^2.3.0"
+  }
+}
