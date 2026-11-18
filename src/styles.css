@@ -33,9 +33,16 @@
   user-select: none;
 }
 
-.little-curve-row {
+/* A control's row: the control, then its buttons (curve, reset). */
+.little-row {
   display: flex;
+  align-items: center;
   gap: var(--little-row-gap);
+}
+
+.little-row-control {
+  flex: 1;
+  min-width: 0;
 }
 
 /* Slider: the dimensions of DialKit's own. */
@@ -132,11 +139,10 @@
   color: var(--little-text-strong);
 }
 
-/* Toolbar row: a versions menu takes the width the history buttons leave. */
+/* Toolbar row: the version button takes the width the history buttons leave. */
 .little-toolbar {
   display: flex;
   gap: var(--little-row-gap);
-  justify-content: flex-end;
   width: 100%;
   min-width: 0;
 }
@@ -146,9 +152,8 @@
   display: contents;
 }
 
-/* Curve and history buttons, and their icons */
-.little-curve-button,
-.little-history-button {
+/* Square icon buttons: curve, reset, undo, redo */
+.little-button {
   flex: none;
   display: grid;
   place-items: center;
@@ -163,24 +168,23 @@
   transition: background 0.15s, color 0.15s;
 }
 
-.little-curve-button:hover,
-.little-history-button:hover:enabled {
+.little-button:hover:enabled {
   color: var(--little-text-strong);
   background: var(--little-surface-hover);
 }
 
-.little-history-button:disabled {
+.little-button:disabled {
   color: var(--little-text-faint);
   cursor: default;
   opacity: 0.4;
 }
 
-.little-history-button:focus-visible {
+.little-button:focus-visible {
   outline: none;
   box-shadow: inset 0 0 0 1px var(--little-focus-ring);
 }
 
-.little-history-icon {
+.little-icon {
   width: 16px;
   height: 16px;
   fill: none;
@@ -260,4 +264,191 @@
 .little-curve-option[data-active] {
   color: var(--little-text-strong);
   background: var(--little-surface-active);
+}
+
+/* Version button: the selected version's name in the toolbar row */
+.little-version-button {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--little-row-gap);
+  height: var(--little-row-height);
+  padding: 0 10px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--little-text-strong);
+  background: var(--little-surface);
+  border: none;
+  border-radius: var(--little-radius);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.little-version-button:hover {
+  background: var(--little-surface-hover);
+}
+
+.little-version-button:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 1px var(--little-focus-ring);
+}
+
+.little-version-button .little-icon {
+  flex: none;
+  color: var(--little-text-faint);
+}
+
+.little-version-label,
+.little-version-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Versions menu: a popover in the top layer */
+.little-version-menu {
+  position: fixed;
+  inset: auto;
+  box-sizing: border-box;
+  min-width: 240px;
+  margin: 0;
+  padding: 4px;
+  overflow-y: auto;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--little-text);
+  background: var(--little-menu);
+  border: 1px solid var(--little-border);
+  border-radius: 12px;
+  box-shadow: var(--little-menu-shadow);
+}
+
+.little-version {
+  display: flex;
+  align-items: center;
+  height: 32px;
+  border-radius: 8px;
+}
+
+.little-version:hover,
+.little-version:focus-within {
+  background: var(--little-surface-hover);
+}
+
+.little-version[data-active] {
+  color: var(--little-text-strong);
+  background: var(--little-surface-active);
+}
+
+.little-version-name,
+.little-version-add,
+.little-version-choice {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.little-version-name {
+  align-self: stretch;
+  padding: 0 8px;
+}
+
+.little-version-field {
+  flex: 1;
+  min-width: 0;
+  margin: 0 4px;
+  padding: 3px 4px;
+  font: inherit;
+  color: var(--little-text-strong);
+  background: var(--little-surface);
+  border: 1px solid var(--little-focus-ring);
+  border-radius: 4px;
+  outline: none;
+}
+
+/* Row buttons show on the row under the pointer or with the focus, and on the selected row. */
+.little-version-action {
+  flex: none;
+  display: none;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  color: var(--little-text-faint);
+  background: none;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.little-version:hover .little-version-action,
+.little-version:focus-within .little-version-action,
+.little-version[data-active] .little-version-action {
+  display: grid;
+}
+
+.little-version-action:hover,
+.little-version-action:focus-visible {
+  color: var(--little-text-strong);
+  background: var(--little-surface-hover);
+  outline: none;
+}
+
+.little-version-action[data-armed] {
+  color: #fff;
+  background: #c0392b;
+}
+
+.little-version-action .little-icon {
+  width: 14px;
+  height: 14px;
+}
+
+.little-version-add {
+  display: block;
+  width: 100%;
+  height: 32px;
+  margin-top: 4px;
+  padding: 0 8px;
+  text-align: left;
+  color: var(--little-text);
+  border-top: 1px solid var(--little-border);
+}
+
+.little-version-add:hover {
+  color: var(--little-text-strong);
+}
+
+.little-version-prompt {
+  margin: 0;
+  padding: 8px;
+  line-height: 1.4;
+  color: var(--little-text-strong);
+}
+
+.little-version-choices {
+  display: flex;
+  gap: 4px;
+  padding: 0 4px 4px;
+}
+
+.little-version-choice {
+  flex: 1;
+  height: 28px;
+  background: var(--little-surface);
+  border-radius: 6px;
+}
+
+.little-version-choice:hover,
+.little-version-choice:focus-visible {
+  color: var(--little-text-strong);
+  background: var(--little-surface-hover);
+  outline: none;
 }

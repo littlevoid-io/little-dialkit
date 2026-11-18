@@ -57,7 +57,7 @@ const target = document.querySelector<HTMLElement>('#panel');
 const output = document.querySelector<HTMLElement>('#values');
 if (!target || !output) throw new Error('Demo page is missing #panel or #values');
 
-// `?menu` shows the versions as a menu; `?docked` docks the panel into #panel; `?position=<corner>` starts the floating panel there and forgets a saved position.
+// `?docked` docks the panel into #panel; `?position=<corner>` starts the floating panel there and forgets a saved position.
 const params = new URLSearchParams(location.search);
 const docked = params.has('docked');
 const position = CORNERS.find((corner) => corner === params.get('position'));
@@ -68,7 +68,6 @@ const shared = {
   id: ID,
   theme: 'dark',
   persist: true,
-  versions: params.has('menu') ? 'menu' : 'thumbnails',
   onAction: (action: string) => ACTIONS[action](),
 } as const;
 

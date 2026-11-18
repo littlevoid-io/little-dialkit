@@ -4,33 +4,36 @@ import {
 } from 'dialkit/vanilla';
 import { ControlTree } from './controlTree';
 import { element } from './dom';
+import { Edits } from './edits';
 import { FloatingShell } from './floatingShell';
 import { FolderState } from './folderState';
 import { HistoryButtons } from './historyButtons';
 import type { PanelOptions } from './panelOptions';
 import { Undo } from './undo';
 import { exportVersions, importVersions, type VersionData } from './versionData';
-import { Versions } from './versions';
+import { VersionMenu } from './versionMenu';
 
-/** A DialKit panel, docked or floating, with curve rows, undo and folders that stay open or closed across reloads. */
+/** A DialKit panel, docked or floating, with curve rows, undo, a versions menu, reset buttons for edited controls and folders that stay open or closed across reloads. */
 export class Panel<Config extends DialConfig> {
   /** DialKit's controller: values, subscriptions and versions. */
   public readonly kit: DialKitController<Config>;
   public readonly history: Undo;
-  /** Above the controls, below the versions: for rows of the page's own, such as DialKit's `mountSlider`. Not part of values, versions or undo. */
+  /** The versions menu: the versions, the selected one, selecting with the prompt for unsaved edits. */
+  public readonly versions: VersionMenu;
+  /** Above the controls: for rows of the page's own, such as DialKit's `mountSlider`. Not part of values, versions or undo. */
   public readonly slot = element('div', 'little-slot');
   private readonly root = element('div', 'dialkit-root little-dialkit');
   private readonly shortcuts = mountShortcutListener();
   private readonly floating: FloatingShell | undefined;
   private readonly shell: ReturnType<typeof mountFolder>;
-  private readonly versions: Versions;
+  private readonly edits: Edits;
   private readonly tree: ControlTree;
   private readonly buttons: HistoryButtons;
   private readonly stop: () => void;
 
   /** The controls are built once: the config's structure is fixed for the life of the panel. */
   constructor(name: string, config: Config, options: PanelOptions) {
-    const { id, theme = 'system', versions = 'thumbnails', labels = {} } = options;
+    const { id, theme = 'system', labels = {} } = options;
     this.kit = createDialKit(name, config, options);
     this.root.dataset.theme = theme;
     (options.target ?? document.body).append(this.root);
@@ -39,10 +42,11 @@ export class Panel<Config extends DialConfig> {
     const toolbar = element('div', 'little-toolbar');
     this.shell.toolbar.append(toolbar);
     const folders = new FolderState(`little-dialkit:${id}:folders`);
-    this.versions = new Versions(id, versions, theme, toolbar, this.shell.body, folders);
-    this.shell.body.append(this.slot);
-    this.tree = new ControlTree(id, folders, labels, this.controls(), this.shell.body);
+    this.edits = new Edits(id);
     this.history = new Undo(id, `little-dialkit:${id}:history`);
+    this.versions = new VersionMenu(id, this.root, toolbar, this.edits, this.history);
+    this.shell.body.append(this.slot);
+    this.tree = new ControlTree(id, folders, this.edits, labels, this.controls(), this.shell.body);
     this.buttons = new HistoryButtons(toolbar, this.history);
     this.stop = DialStore.subscribe(id, () => this.render());
   }
@@ -77,6 +81,7 @@ export class Panel<Config extends DialConfig> {
   }
 
   private render(): void {
+    this.edits.update();
     this.floating?.update();
     this.tree.update();
     this.versions.update();

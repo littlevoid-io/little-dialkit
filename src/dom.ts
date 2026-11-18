@@ -11,3 +11,20 @@ export function element<Tag extends keyof HTMLElementTagNameMap>(tag: Tag, class
   node.textContent = text;
   return node;
 }
+
+/** Space between an anchor and the menu below it, and between the menu and the viewport's edge, in pixels. */
+const OFFSET = 4;
+
+/** Places a top-layer menu under `anchor`, at its width, no taller than the viewport leaves. */
+export function placeBelow(menu: HTMLElement, anchor: HTMLElement): void {
+  const { left, bottom, width } = anchor.getBoundingClientRect();
+  const top = bottom + OFFSET;
+  Object.assign(menu.style, { left: `${left}px`, top: `${top}px`, width: `${width}px`, maxHeight: `${innerHeight - top - OFFSET}px` });
+}
+
+export function textButton(className: string, text: string, onClick: () => void): HTMLButtonElement {
+  const button = element('button', className, text);
+  button.type = 'button';
+  button.addEventListener('click', onClick);
+  return button;
+}

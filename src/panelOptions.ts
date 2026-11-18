@@ -1,11 +1,9 @@
-import type { CreateDialOptions, DialMode, DialRootOptions, DialTheme, DialVersions } from 'dialkit/vanilla';
+import type { CreateDialOptions, DialMode, DialRootOptions, DialTheme } from 'dialkit/vanilla';
 
 interface CommonOptions extends CreateDialOptions {
   /** Names the panel in DialKit's store and in the storage keys. */
   id: string;
   theme?: DialTheme;
-  /** How saved versions appear: thumbnails above the controls (default), or a menu in the toolbar. */
-  versions?: DialVersions;
   /** Labels by control path (`'blur.radius'`), in place of the ones DialKit derives from the keys. */
   labels?: Record<string, string>;
 }

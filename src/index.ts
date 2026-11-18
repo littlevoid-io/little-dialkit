@@ -4,3 +4,5 @@ export { Panel } from './panel';
 export type { DockedOptions, FloatingOptions, PanelOptions } from './panelOptions';
 export type { Undo } from './undo';
 export type { Version, VersionData } from './versionData';
+export type { VersionMenu } from './versionMenu';
+export type { VersionEntry } from './versions';

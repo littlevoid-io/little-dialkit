@@ -6,6 +6,8 @@ Additions to [DialKit](https://github.com/joshpuckett/dialkit) panels in plain T
 - Undo / redo of value changes, with buttons in the panel
 - Folders that stay open or closed across reloads
 - A docked or floating panel built from DialKit's own controls, store, versions and persistence
+- A versions menu: select, rename, delete, save as new; edits are marked and become part of a version only when saved
+- A reset button on every control that differs from the selected version
 - Versions as plain data, to save to a file or send to a server
 
 ## Setup
@@ -37,7 +39,9 @@ panel.kit.subscribe((values) => {
 - The config is a DialKit config. `curve([default, min, max, step?], name?)` stands in for a slider.
 - `panel.kit` is DialKit's controller: `getValues`, `setValues`, `subscribe`, `resetValues`.
 - `panel.history.undo()` and `panel.history.redo()`; `canUndo` and `canRedo` tell whether a step is left, `subscribe(listener)` reports changes; Ctrl+Z, Ctrl+Shift+Z and Ctrl+Y (Cmd on macOS).
-- `versions: 'menu'` shows the versions as a menu. The default is DialKit's thumbnail gallery in a folder named after the selected version; it starts closed. Double-click a name to rename.
+- The button next to undo / redo names the selected version, with `*` while it has edits, and opens the versions menu. Folders with edited controls carry the same mark.
+- Edits stay apart from the version until saved (check mark in the menu) or discarded. Selecting another version asks to save or discard them first.
+- `panel.versions`: `entries`, `active`, `edited`, `select(entry)` (asks like the menu), `save()`, `discard()`, `add()`, `rename(entry, name)`, `remove(entry)`.
 - `labels: { 'blur.radius': 'Radius (px)' }` sets labels by control path; DialKit derives the others from the keys.
 - `panel.slot` is an element above the controls for rows of your own (for example DialKit's `mountSlider`); they are not part of values, versions or undo.
 - `panel.destroy()` removes the panel and its listeners.
@@ -62,9 +66,8 @@ panel.importVersions(data);           // replaces all versions
 ```
 
 - Values are keyed by control path. Values of controls the panel does not have are ignored on import.
-- Export keeps pending edits in the selected version, as leaving it in the panel does.
+- Export saves pending edits into the selected version.
 - An import is one undo step for the visible values. The versions themselves are not undone.
-- Thumbnails are not included.
 
 Where the data goes is up to the project. A Vite dev-server route that writes it to a file:
 
@@ -100,7 +103,7 @@ The route accepts any request that reaches the dev server. Keep the server on lo
 
 | Command | Does |
 |---|---|
-| `npm run dev` | Demo page: floating; `?docked` docks it, `?menu` shows the versions menu, `?position=<corner>` picks the corner |
+| `npm run dev` | Demo page: floating; `?docked` docks it, `?position=<corner>` picks the corner |
 | `npm run check` | Type check |
 | `npm test` | Unit tests |
 | `npm run build` | `dist/` with JS, types and `styles.css` |

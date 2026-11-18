@@ -1,17 +1,14 @@
 import { curveIcon } from './curveIcon';
 import type { CurveModel } from './curveModel';
 import { type CurveName, FAMILY_NAMES, VARIANTS } from './curves';
-import { element, type Mounted } from './dom';
-
-/** Space between the row and the menu below it, in pixels. */
-const OFFSET = 4;
+import { element, type Mounted, placeBelow } from './dom';
 
 /**
  * Button on a curve row showing its curve, with a menu of all curves: families across, variants down.
- * The menu has its options only while it is open: a panel holds many rows, and DialKit's thumbnail capture reads the style of every element.
+ * The menu has its options only while it is open: a panel holds many rows.
  */
 export class CurvePicker implements Mounted {
-  private readonly button = element('button', 'little-curve-button');
+  private readonly button = element('button', 'little-button little-curve-button');
   private readonly menu = element('div', 'little-curve-menu');
   private readonly options = new Map<CurveName, HTMLButtonElement>();
   private shown?: CurveName;
@@ -46,7 +43,7 @@ export class CurvePicker implements Mounted {
     if (!open) return;
     this.fill();
     this.mark();
-    this.place();
+    placeBelow(this.menu, this.row);
   }
 
   private mark(): void {
@@ -74,11 +71,5 @@ export class CurvePicker implements Mounted {
   private choose(name: CurveName): void {
     this.menu.hidePopover();
     this.model.curve = name;
-  }
-
-  /** The menu is in the top layer: placed under the row, at the row's width. */
-  private place(): void {
-    const { left, bottom, width } = this.row.getBoundingClientRect();
-    Object.assign(this.menu.style, { left: `${left}px`, top: `${bottom + OFFSET}px`, width: `${width}px` });
   }
 }
