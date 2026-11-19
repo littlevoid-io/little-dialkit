@@ -41,7 +41,18 @@ panel.kit.subscribe((values) => {
 - Docked is the default: `target` is required and the panel is always open. `mode: 'popover'` floats the panel instead (see below).
 - The config is a DialKit config. `curve([default, min, max, step?], name?)` stands in for a slider.
 - `panel.kit` is DialKit's controller: `getValues`, `setValues`, `subscribe`, `resetValues`.
-- `panel.history.undo()` and `panel.history.redo()`; `canUndo` and `canRedo` tell whether a step is left, `subscribe(listener)` reports changes; Ctrl+Z, Ctrl+Shift+Z and Ctrl+Y (Cmd on macOS). A step holds the values and the selected version: undo after a version switch selects the version left.
+- `panel.history.undo()` and `panel.history.redo()`; `canUndo` and `canRedo` tell whether a step is left, `subscribe(listener)` reports changes. A step holds the values and the selected version: undo after a version switch selects the version left.
+- A row of buttons under the toolbar: save, save as new version, reset (as the keys below) and export (downloads all versions as `<id>-versions.json`). `actions: { export: false }` in the options leaves a button out. `panel.actions.save()`, `saveAs()`, `reset()` and `export()` do the same from code.
+- Keys (Cmd for Ctrl on macOS; not while a text field has the focus):
+
+  | Key | Action |
+  |---|---|
+  | `Ctrl+S` | Save the edits into the selected version, then call `panel.actions.onSave` (for example to write the versions to a file) |
+  | `Ctrl+Shift+S` | Save as a new version (calls `panel.versions.onAdd`) |
+  | `[` / `]` | Select the previous / next version; wraps at the ends |
+  | `Escape` | Reset: discard the edits on the selected version, after a confirm dialog. `panel.actions.onReset` takes its place when set |
+  | `Ctrl+Z` / `Ctrl+Shift+Z` or `Ctrl+Y` | Undo / redo |
+
 - The button next to undo / redo names the selected version, with `*` while it has edits, and opens the versions menu. Folders with edited controls carry the same mark.
 - Edits stay apart from the version until saved (check mark in the menu) or discarded. Selecting another version asks to save or discard them first.
 - `panel.versions`: `entries`, `active`, `edited`, `select(entry)` (asks like the menu), `save()`, `discard()`, `add()` (saves a new version named after the selected one, `name` -> `name-v02` -> `name-v03`, and opens the menu on its name field), `rename(entry, name)`, `remove(entry)`, `onAdd` (set it to be called when a new version was saved, by `add()` or the menu, and again when its name is changed in the field that opens; for example to write the versions to a file), `move(id, target, after)` (puts a saved version before or after another one; the menu does it on drag and drop).

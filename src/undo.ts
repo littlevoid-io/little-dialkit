@@ -3,11 +3,7 @@ import type { Edits } from './edits';
 import { EditHistory } from './history';
 import { show, type Shown, shown } from './versions';
 
-function isEditable(target: EventTarget | null): boolean {
-  return target instanceof HTMLElement && (target.isContentEditable || target.matches('input, textarea, select'));
-}
-
-/** Undo / redo of a panel's values and its selected version: Ctrl+Z, Ctrl+Shift+Z and Ctrl+Y (Cmd on macOS). */
+/** Undo / redo of a panel's values and its selected version. The keys: `Shortcuts`. */
 export class Undo {
   private readonly history: EditHistory<Shown>;
   private readonly stop: () => void;
@@ -16,7 +12,6 @@ export class Undo {
   constructor(private readonly panelId: string, storageKey: string, private readonly edits: Edits) {
     this.history = new EditHistory(shown(panelId), storageKey);
     this.stop = DialStore.subscribe(panelId, () => this.record());
-    window.addEventListener('keydown', this.key);
   }
 
   public undo(): void {
@@ -53,7 +48,6 @@ export class Undo {
 
   public destroy(): void {
     this.stop();
-    window.removeEventListener('keydown', this.key);
   }
 
   private record(): void {
@@ -63,13 +57,4 @@ export class Undo {
   private restore(step: Shown | undefined): void {
     if (step) this.suspend(() => show(this.panelId, step, this.edits.held));
   }
-
-  private readonly key = (event: KeyboardEvent): void => {
-    if (!(event.ctrlKey || event.metaKey) || isEditable(event.target)) return;
-    const key = event.key.toLowerCase();
-    if (key !== 'z' && key !== 'y') return;
-    event.preventDefault();
-    if (key === 'z' && !event.shiftKey) this.undo();
-    else this.redo();
-  };
 }

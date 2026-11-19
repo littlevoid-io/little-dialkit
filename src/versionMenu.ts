@@ -91,6 +91,7 @@ export class VersionMenu implements Mounted, RowActions {
   /** Saves the visible values as a new version (`saveNewVersion`) and shows it in the menu, its name ready to be changed. The version left keeps what it held. */
   public add(): void {
     this.renaming = this.added = saveNewVersion(this.panelId);
+    this.pending = undefined;
     this.onAdd?.();
     if (!this.open) this.menu.showPopover();
     this.draw();

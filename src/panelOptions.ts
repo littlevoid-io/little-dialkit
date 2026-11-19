@@ -1,3 +1,4 @@
+import type { ActionChoice } from './actions';
 import type { CreateDialOptions, DialMode, DialRootOptions, DialTheme } from 'dialkit/vanilla';
 
 interface CommonOptions extends CreateDialOptions {
@@ -6,6 +7,8 @@ interface CommonOptions extends CreateDialOptions {
   theme?: DialTheme;
   /** Labels by control path (`'blur.radius'`), in place of the ones DialKit derives from the keys. */
   labels?: Record<string, string>;
+  /** Buttons of the action row under the toolbar (save, save as new version, reset, export to a file): all, unless set to false. */
+  actions?: ActionChoice;
 }
 
 /** A panel docked into `target`, always open. */
