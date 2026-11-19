@@ -85,8 +85,9 @@ Library that adds mapping curves, undo, a versions menu with edit tracking, pers
 
 ## Release
 
-- `npm run release` runs release-it with `.release-it.json`: type check and tests, version prompt, build, commit `chore: release v<version>`, tag `v<version>`, push, `npm publish`, GitHub release with the commit list as notes.
-- Requires branch `main`, a clean working tree, an upstream and `npm login`. Without `GITHUB_TOKEN` the GitHub release is a prefilled browser form.
+- `npm run release` runs release-it with `.release-it.js`: type check and tests, version prompt, build, commit `chore: release v<version>`, tag `v<version>`, push, `npm publish`, GitHub release with the commit list as notes.
+- Requires branch `main`, a clean working tree, an upstream, `npm login` and `gh auth login`.
+- `.release-it.js` sets `GITHUB_TOKEN` from `gh auth token` when it is unset, so release-it creates the GitHub release through the API. A `GITHUB_TOKEN` already in the environment wins.
 - `npm run release -- --no-increment` releases the version in `package.json` as is (first release: 0.1.0). `--dry-run` shows the steps without changes.
 
 ## Verification

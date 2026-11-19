@@ -118,7 +118,7 @@ The route accepts any request that reaches the dev server. Keep the server on lo
 - **Controls do not appear after `kit.updateConfig`:** the panel builds its controls once. Create a new `Panel` for a different structure.
 - **`position` has no effect:** a stored position wins. Delete `little-dialkit:<id>:shell` from localStorage.
 - **Release stops at npm:** run `npm login` first.
-- **GitHub release opens in the browser:** set `GITHUB_TOKEN` (for example from `gh auth token`) to create it without the browser.
+- **Release fails with `Invalid configuration file at .release-it`:** run `gh auth login`, or set `GITHUB_TOKEN`.
 - **Unstyled panel:** import both stylesheets, DialKit's first.
 
 See [AGENTS.md](AGENTS.md) for architecture and conventions.
