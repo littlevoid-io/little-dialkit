@@ -1,19 +1,20 @@
 import { DialStore } from 'dialkit/vanilla';
+import type { Edits } from './edits';
 import { EditHistory } from './history';
-import { type Values, withoutActions } from './values';
+import { show, type Shown, shown } from './versions';
 
 function isEditable(target: EventTarget | null): boolean {
   return target instanceof HTMLElement && (target.isContentEditable || target.matches('input, textarea, select'));
 }
 
-/** Undo / redo of a panel's values: Ctrl+Z, Ctrl+Shift+Z and Ctrl+Y (Cmd on macOS). */
+/** Undo / redo of a panel's values and its selected version: Ctrl+Z, Ctrl+Shift+Z and Ctrl+Y (Cmd on macOS). */
 export class Undo {
-  private readonly history: EditHistory<Values>;
+  private readonly history: EditHistory<Shown>;
   private readonly stop: () => void;
   private suspended = false;
 
-  constructor(private readonly panelId: string, storageKey: string) {
-    this.history = new EditHistory(this.snapshot(), storageKey);
+  constructor(private readonly panelId: string, storageKey: string, private readonly edits: Edits) {
+    this.history = new EditHistory(shown(panelId), storageKey);
     this.stop = DialStore.subscribe(panelId, () => this.record());
     window.addEventListener('keydown', this.key);
   }
@@ -55,16 +56,12 @@ export class Undo {
     window.removeEventListener('keydown', this.key);
   }
 
-  private snapshot(): Values {
-    return withoutActions(DialStore.getValues(this.panelId));
-  }
-
   private record(): void {
-    if (!this.suspended) this.history.record(this.snapshot());
+    if (!this.suspended) this.history.record(shown(this.panelId));
   }
 
-  private restore(values: Values | undefined): void {
-    if (values) this.suspend(() => DialStore.updateValues(this.panelId, values));
+  private restore(step: Shown | undefined): void {
+    if (step) this.suspend(() => show(this.panelId, step, this.edits.held));
   }
 
   private readonly key = (event: KeyboardEvent): void => {

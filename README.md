@@ -3,7 +3,7 @@
 Additions to [DialKit](https://github.com/joshpuckett/dialkit) panels in plain TypeScript:
 
 - Mapping curves: a slider whose position maps to its value through a selectable easing curve
-- Undo / redo of value changes, with buttons in the panel
+- Undo / redo of value changes and version switches, with buttons in the panel
 - Folders that stay open or closed across reloads
 - A docked or floating panel built from DialKit's own controls, store, versions and persistence
 - A versions menu: select, rename, delete, drag to sort, save as new; edits are marked and become part of a version only when saved
@@ -41,7 +41,7 @@ panel.kit.subscribe((values) => {
 - Docked is the default: `target` is required and the panel is always open. `mode: 'popover'` floats the panel instead (see below).
 - The config is a DialKit config. `curve([default, min, max, step?], name?)` stands in for a slider.
 - `panel.kit` is DialKit's controller: `getValues`, `setValues`, `subscribe`, `resetValues`.
-- `panel.history.undo()` and `panel.history.redo()`; `canUndo` and `canRedo` tell whether a step is left, `subscribe(listener)` reports changes; Ctrl+Z, Ctrl+Shift+Z and Ctrl+Y (Cmd on macOS).
+- `panel.history.undo()` and `panel.history.redo()`; `canUndo` and `canRedo` tell whether a step is left, `subscribe(listener)` reports changes; Ctrl+Z, Ctrl+Shift+Z and Ctrl+Y (Cmd on macOS). A step holds the values and the selected version: undo after a version switch selects the version left.
 - The button next to undo / redo names the selected version, with `*` while it has edits, and opens the versions menu. Folders with edited controls carry the same mark.
 - Edits stay apart from the version until saved (check mark in the menu) or discarded. Selecting another version asks to save or discard them first.
 - `panel.versions`: `entries`, `active`, `edited`, `select(entry)` (asks like the menu), `save()`, `discard()`, `add()` (saves a new version named after the selected one, `name` -> `name-v02` -> `name-v03`, and opens the menu on its name field), `rename(entry, name)`, `remove(entry)`, `onAdd` (set it to be called when a new version was saved, by `add()` or the menu, and again when its name is changed in the field that opens; for example to write the versions to a file), `move(id, target, after)` (puts a saved version before or after another one; the menu does it on drag and drop).

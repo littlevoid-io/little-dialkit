@@ -44,7 +44,7 @@ export class Panel<Config extends DialConfig> {
     this.shell.toolbar.append(toolbar);
     const folders = new FolderState(`little-dialkit:${id}:folders`);
     this.edits = new Edits(id);
-    this.history = new Undo(id, `little-dialkit:${id}:history`);
+    this.history = new Undo(id, `little-dialkit:${id}:undo`, this.edits);
     this.versions = new VersionMenu(id, this.root, toolbar, this.edits, this.history);
     this.shell.body.append(this.slot);
     this.tree = new ControlTree(id, folders, this.edits, new Spread(id, this.edits, this.history), labels, this.controls(), this.shell.body);

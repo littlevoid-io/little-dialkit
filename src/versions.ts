@@ -1,4 +1,5 @@
 import { DialStore } from 'dialkit/vanilla';
+import { type Values, withoutActions } from './values';
 
 /** A version in DialKit's store. */
 export interface VersionEntry {
@@ -32,6 +33,29 @@ export function nextName(name: string, taken: string[]): string {
 export function saveNewVersion(panelId: string): string {
   const name = nextName(activeVersion(panelId).name, listVersions(panelId).map((version) => version.name));
   return DialStore.savePreset(panelId, name);
+}
+
+/** What a panel shows: the visible values and the name of the selected version. An undo step. */
+export interface Shown {
+  values: Values;
+  version: string;
+}
+
+export function shown(panelId: string): Shown {
+  return { values: withoutActions(DialStore.getValues(panelId)), version: activeVersion(panelId).name };
+}
+
+/**
+ * Shows `step`: selects its version, if there is still one of that name, and sets its values (edits where the version holds others).
+ * `held`: what the selected version holds. It is left without its edits; leaving would merge them into it (DialKit).
+ */
+export function show(panelId: string, step: Shown, held: Values): void {
+  const version = listVersions(panelId).find(({ name }) => name === step.version);
+  if (version && version.id !== DialStore.getActivePresetId(panelId)) {
+    DialStore.updateValues(panelId, held);
+    selectVersion(panelId, version.id);
+  }
+  DialStore.updateValues(panelId, step.values);
 }
 
 /** Edits on the version that is left become part of it (DialKit). */
