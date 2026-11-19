@@ -56,7 +56,7 @@ export class Panel<Config extends DialConfig> {
     this.actions = new Actions(this);
     this.shortcuts = new Shortcuts(this.actions, this.versions, this.history);
     this.shell.body.append(this.actions.row(options.actions ?? {}) ?? '', this.slot);
-    this.spread = new Spread(id, this.edits, this.history);
+    this.spread = new Spread(id, this.edits, this.history, this.versions);
     this.tree = new ControlTree(id, folders, this.edits, this.spread, labels, this.controls(), this.shell.body);
     this.buttons = new HistoryButtons(toolbar, this.history);
     this.stop = DialStore.subscribe(id, () => this.render());

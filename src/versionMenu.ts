@@ -4,7 +4,7 @@ import type { Edits } from './edits';
 import type { Undo } from './undo';
 import { VersionButton } from './versionButton';
 import { moveVersion } from './versionOrder';
-import { versionPrompt } from './versionPrompt';
+import { leaveQuestion, type Question, versionPrompt } from './versionPrompt';
 import { type RowActions, versionRow } from './versionRow';
 import { activeVersion, listVersions, saveNewVersion, selectVersion, type VersionEntry } from './versions';
 
@@ -16,11 +16,11 @@ import { activeVersion, listVersions, saveNewVersion, selectVersion, type Versio
 export class VersionMenu implements Mounted, RowActions {
   private readonly menu = element('div', 'little-version-menu');
   private readonly button = new VersionButton(this.menu);
+  /** The menu has its rows only while it is open. */
   private open = false;
-  /** What the open menu shows, to redraw it only when that changes. */
   private shown = '';
-  /** The version to select once the edits are saved or discarded. */
-  private pending: VersionEntry | undefined;
+  /** Shown in place of the rows until answered. */
+  private question: Question | undefined;
   /** Id of the version being renamed (null: the base); undefined: none. */
   private renaming: VersionEntry['id'] | undefined;
   /** Called when a new version was saved (`add`), and again when its name is changed in the field `add` shows. */
@@ -28,11 +28,7 @@ export class VersionMenu implements Mounted, RowActions {
   private added: string | undefined;
 
   constructor(
-    private readonly panelId: string,
-    private readonly root: HTMLElement,
-    private readonly toolbar: HTMLElement,
-    private readonly edits: Edits,
-    private readonly history: Undo,
+    private readonly panelId: string, private readonly root: HTMLElement, private readonly toolbar: HTMLElement, private readonly edits: Edits, private readonly history: Undo,
   ) {
     this.menu.popover = 'auto';
     this.menu.addEventListener('beforetoggle', (event) => this.toggle(event.newState === 'open'));
@@ -57,7 +53,12 @@ export class VersionMenu implements Mounted, RowActions {
   public select(entry: VersionEntry): void {
     if (entry.id === this.active.id) return this.menu.hidePopover();
     if (!this.edited) return this.leave(entry, true);
-    this.pending = entry;
+    this.ask(leaveQuestion(this.active, entry, (keep) => this.leave(entry, keep)));
+  }
+
+  /** Opens the menu on a question in place of its rows. A choice, or Cancel, closes it. */
+  public ask(question: Question): void {
+    this.question = question;
     if (!this.open) this.menu.showPopover();
     this.draw();
   }
@@ -91,7 +92,7 @@ export class VersionMenu implements Mounted, RowActions {
   /** Saves the visible values as a new version (`saveNewVersion`) and shows it in the menu, its name ready to be changed. The version left keeps what it held. */
   public add(): void {
     this.renaming = this.added = saveNewVersion(this.panelId);
-    this.pending = undefined;
+    this.question = undefined;
     this.onAdd?.();
     if (!this.open) this.menu.showPopover();
     this.draw();
@@ -112,7 +113,6 @@ export class VersionMenu implements Mounted, RowActions {
     this.menu.remove();
   }
 
-  /** The menu has its rows only while it is open. */
   private toggle(open: boolean): void {
     this.open = open;
     this.shown = '';
@@ -123,7 +123,7 @@ export class VersionMenu implements Mounted, RowActions {
       return;
     }
     this.menu.replaceChildren();
-    this.pending = this.renaming = undefined;
+    this.question = this.renaming = undefined;
   }
 
   /** `keep`: the edits become part of the version that is left. One undo step. */
@@ -136,12 +136,12 @@ export class VersionMenu implements Mounted, RowActions {
   }
 
   private draw(): void {
-    const { entries, active, edited, pending, renaming } = this;
-    const shown = JSON.stringify({ entries, active, edited, pending, renaming: renaming ?? (renaming === null ? 'base' : '') });
+    const { entries, active, edited, question, renaming } = this;
+    const shown = JSON.stringify({ entries, active, edited, question: question?.text, renaming: renaming ?? (renaming === null ? 'base' : '') });
     if (!this.open || shown === this.shown) return;
     this.shown = shown;
     const rows = entries.map((entry) => versionRow(entry, { active: entry.id === active.id, edited, renaming: entry.id === renaming }, this));
-    const prompt = pending && versionPrompt(active, pending, (keep) => this.leave(pending, keep), () => this.menu.hidePopover());
+    const prompt = question && versionPrompt(question, () => this.menu.hidePopover());
     this.menu.replaceChildren(...(prompt ?? [...rows, textButton('little-version-add', 'Save as new version', () => this.add())]));
     const field = this.menu.querySelector('input');
     field?.focus();

@@ -2,6 +2,7 @@ import { DialStore } from 'dialkit/vanilla';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { Edits } from './edits';
 import { applyToVersions } from './spread';
+import { exportVersions, type VersionData } from './versionData';
 
 const ID = 'spread-test';
 const CONFIG = { size: [1, 0, 10, 1] as [number, number, number, number], blur: [2, 0, 10, 1] as [number, number, number, number] };
@@ -54,6 +55,23 @@ describe('applyToVersions', () => {
     expect(DialStore.getActivePresetId(ID)).toBeNull();
     expect(DialStore.getValues(ID)).toMatchObject({ size: 1, blur: 7 });
     expect(DialStore.hasEdits(ID)).toBe(false);
+    expect(DialStore.getPresets(ID).find(({ id }) => id === two)?.values).toMatchObject({ size: 3, blur: 7 });
+  });
+
+  it('keeps the other edits of an edited base version, with an export in between', () => {
+    const edits = new Edits(ID);
+    DialStore.updateValue(ID, 'size', 3);
+    const two = DialStore.savePreset(ID, 'Two');
+    DialStore.clearActivePreset(ID);
+    edits.update();
+    DialStore.updateValues(ID, { size: 5, blur: 7 });
+    edits.update();
+    const exported: VersionData[] = [];
+    applyToVersions(ID, ['blur'], edits.held, () => exported.push(exportVersions(ID)));
+    expect(exported[0]?.base.values).toMatchObject({ size: 1, blur: 7 });
+    expect(DialStore.getActivePresetId(ID)).toBeNull();
+    expect(DialStore.getValues(ID)).toMatchObject({ size: 5, blur: 7 });
+    expect(DialStore.hasEdits(ID)).toBe(true);
     expect(DialStore.getPresets(ID).find(({ id }) => id === two)?.values).toMatchObject({ size: 3, blur: 7 });
   });
 });
