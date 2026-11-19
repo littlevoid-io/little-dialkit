@@ -19,6 +19,21 @@ export function activeVersion(panelId: string): VersionEntry {
   return active;
 }
 
+/** Name for a version saved from the one named `name`: the next free `-vNN` (`look` -> `look-v02`, `look-v02` -> `look-v03`). */
+export function nextName(name: string, taken: string[]): string {
+  const [, stem = name, number = '1'] = /^(.*)-v(\d+)$/.exec(name) ?? [];
+  for (let version = Number(number) + 1; ; version++) {
+    const next = `${stem}-v${String(version).padStart(2, '0')}`;
+    if (!taken.includes(next)) return next;
+  }
+}
+
+/** Saves the visible values as a new version named after the selected one and selects it. Returns its id. */
+export function saveNewVersion(panelId: string): string {
+  const name = nextName(activeVersion(panelId).name, listVersions(panelId).map((version) => version.name));
+  return DialStore.savePreset(panelId, name);
+}
+
 /** Edits on the version that is left become part of it (DialKit). */
 export function selectVersion(panelId: string, id: VersionEntry['id']): void {
   if (id === null) DialStore.clearActivePreset(panelId);

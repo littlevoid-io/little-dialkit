@@ -8,7 +8,7 @@ Additions to [DialKit](https://github.com/joshpuckett/dialkit) panels in plain T
 - A docked or floating panel built from DialKit's own controls, store, versions and persistence
 - A versions menu: select, rename, delete, save as new; edits are marked and become part of a version only when saved
 - A reset button on every control, enabled while it differs from the selected version
-- An apply-to-all-versions button on every control: writes its value into all other versions (second click confirms)
+- An apply-to-all-versions button on every control: writes its value into all versions (second click confirms)
 - `--little-accent`: color of what is changed (enabled reset buttons, curves other than linear); set it on `.little-dialkit` to change it
 - `actionRow([{ label, icon, run }])`: a row of icon buttons for `panel.slot`
 - Versions as plain data, to save to a file or send to a server
@@ -44,7 +44,7 @@ panel.kit.subscribe((values) => {
 - `panel.history.undo()` and `panel.history.redo()`; `canUndo` and `canRedo` tell whether a step is left, `subscribe(listener)` reports changes; Ctrl+Z, Ctrl+Shift+Z and Ctrl+Y (Cmd on macOS).
 - The button next to undo / redo names the selected version, with `*` while it has edits, and opens the versions menu. Folders with edited controls carry the same mark.
 - Edits stay apart from the version until saved (check mark in the menu) or discarded. Selecting another version asks to save or discard them first.
-- `panel.versions`: `entries`, `active`, `edited`, `select(entry)` (asks like the menu), `save()`, `discard()`, `add()`, `rename(entry, name)`, `remove(entry)`.
+- `panel.versions`: `entries`, `active`, `edited`, `select(entry)` (asks like the menu), `save()`, `discard()`, `add()` (saves a new version named after the selected one, `name` -> `name-v02` -> `name-v03`, and opens the menu on its name field), `rename(entry, name)`, `remove(entry)`.
 - `labels: { 'blur.radius': 'Radius (px)' }` sets labels by control path; DialKit derives the others from the keys.
 - `panel.slot` is an element above the controls for rows of your own (for example DialKit's `mountSlider`); they are not part of values, versions or undo.
 - `panel.destroy()` removes the panel and its listeners.

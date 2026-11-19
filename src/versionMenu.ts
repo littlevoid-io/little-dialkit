@@ -5,7 +5,7 @@ import { icon, ICONS } from './icon';
 import type { Undo } from './undo';
 import { versionPrompt } from './versionPrompt';
 import { type RowActions, versionRow } from './versionRow';
-import { activeVersion, listVersions, selectVersion, type VersionEntry } from './versions';
+import { activeVersion, listVersions, saveNewVersion, selectVersion, type VersionEntry } from './versions';
 
 /**
  * The versions of a panel: a button in the toolbar naming the selected one (with `*` while it has edits) and its menu:
@@ -55,13 +55,11 @@ export class VersionMenu implements Mounted, RowActions {
 
   /** Selects a version. With edits on the selected one, the menu opens and asks to save or discard them. */
   public select(entry: VersionEntry): void {
-    if (entry.id === this.active.id) this.menu.hidePopover();
-    else if (!this.edited) this.leave(entry, true);
-    else {
-      this.pending = entry;
-      if (this.open) this.draw();
-      else this.menu.showPopover();
-    }
+    if (entry.id === this.active.id) return this.menu.hidePopover();
+    if (!this.edited) return this.leave(entry, true);
+    this.pending = entry;
+    if (!this.open) this.menu.showPopover();
+    this.draw();
   }
 
   public edit(entry: VersionEntry): void {
@@ -89,9 +87,10 @@ export class VersionMenu implements Mounted, RowActions {
     this.edits.resetAll();
   }
 
-  /** Saves the visible values as a new version and selects it, ready to be named. The version left keeps what it held. */
+  /** Saves the visible values as a new version (`saveNewVersion`) and shows it in the menu, its name ready to be changed. The version left keeps what it held. */
   public add(): void {
-    this.renaming = DialStore.saveNewPreset(this.panelId);
+    this.renaming = saveNewVersion(this.panelId);
+    if (!this.open) this.menu.showPopover();
     this.draw();
   }
 

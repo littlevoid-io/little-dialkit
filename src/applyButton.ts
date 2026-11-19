@@ -5,7 +5,7 @@ import type { Spread } from './spread';
 const LABEL = 'Apply to all versions';
 
 /**
- * Button of a control's row: writes the control's value into all other versions on the second click.
+ * Button of a control's row: writes the control's value into all versions on the second click.
  * Leaving the button disarms it. Disabled while there is no other version.
  */
 export class ApplyButton implements Mounted {

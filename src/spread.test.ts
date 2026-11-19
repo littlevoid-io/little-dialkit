@@ -16,7 +16,7 @@ describe('applyToVersions', () => {
   beforeEach(() => DialStore.registerPanel(ID, 'Test', CONFIG));
   afterEach(() => DialStore.unregisterPanel(ID));
 
-  it('writes an edit into the other versions and keeps it an edit', () => {
+  it('writes an edit into every version and keeps the other edits', () => {
     DialStore.updateValues(ID, { size: 3, blur: 4 });
     const two = DialStore.savePreset(ID, 'Two');
     DialStore.updateValues(ID, { size: 5, blur: 6 });
@@ -26,9 +26,9 @@ describe('applyToVersions', () => {
     applyToVersions(ID, ['size'], edits.held);
     expect(DialStore.getActivePresetId(ID)).toBe(three);
     expect(DialStore.getValues(ID)).toMatchObject({ size: 8, blur: 9 });
-    expect(DialStore.getPresets(ID).find(({ id }) => id === three)?.values).toMatchObject({ size: 5, blur: 6 });
+    expect(DialStore.getPresets(ID).find(({ id }) => id === three)?.values).toMatchObject({ size: 8, blur: 6 });
     expect(DialStore.getPresets(ID).find(({ id }) => id === two)?.values).toMatchObject({ size: 8, blur: 4 });
-    DialStore.updateValues(ID, { size: 5, blur: 6 });
+    DialStore.updateValues(ID, { size: 8, blur: 6 });
     expect(held(null)).toMatchObject({ size: 8, blur: 2 });
   });
 
@@ -43,7 +43,7 @@ describe('applyToVersions', () => {
     applyToVersions(ID, ['blur'], edits.held);
     expect(DialStore.getActivePresetId(ID)).toBeNull();
     expect(DialStore.getValues(ID)).toMatchObject({ size: 1, blur: 7 });
-    expect(DialStore.hasEdits(ID)).toBe(true);
+    expect(DialStore.hasEdits(ID)).toBe(false);
     expect(DialStore.getPresets(ID).find(({ id }) => id === two)?.values).toMatchObject({ size: 3, blur: 7 });
   });
 });
