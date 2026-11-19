@@ -8,6 +8,7 @@ Library that adds mapping curves, undo, a versions menu with edit tracking, pers
 - Lean on DialKit's features (store, versions, persistence, shortcuts, controls) instead of rebuilding them. Exception: the versions UI is own (`VersionMenu`), because DialKit's gallery and menu select versions themselves and so merge edits without asking.
 - DialKit's `--dial-*` CSS variables are undocumented. Read them only in the `.little-dialkit` block of `src/styles.css`, each with a fallback.
 - Own classes and storage keys are prefixed `little-`.
+- Prefer the library's controls over DialKit's defaults in every panel config, here and in projects using the library. A number is a curve slider: `curve([default, min, max, step])`, not DialKit's slider notation `[default, min, max, step]`. Use a plain slider only when asked for one. The demo keeps two plain sliders so that `NativeControl` rows of that kind stay covered.
 
 ## Concepts
 
