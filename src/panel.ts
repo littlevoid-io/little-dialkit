@@ -25,6 +25,8 @@ export class Panel<Config extends DialConfig> {
   public readonly versions: VersionMenu;
   /** Save, save as a new version, reset and export: what the action row and the keys do, with hooks for the page. */
   public readonly actions: Actions;
+  /** Apply to all versions: what the button of a control's row does, with a hook for the page. */
+  public readonly spread: Spread;
   private readonly shortcuts: Shortcuts;
   /** Above the controls: for rows of the page's own, such as DialKit's `mountSlider`. Not part of values, versions or undo. */
   public readonly slot = element('div', 'little-slot');
@@ -54,7 +56,8 @@ export class Panel<Config extends DialConfig> {
     this.actions = new Actions(this);
     this.shortcuts = new Shortcuts(this.actions, this.versions, this.history);
     this.shell.body.append(this.actions.row(options.actions ?? {}) ?? '', this.slot);
-    this.tree = new ControlTree(id, folders, this.edits, new Spread(id, this.edits, this.history), labels, this.controls(), this.shell.body);
+    this.spread = new Spread(id, this.edits, this.history);
+    this.tree = new ControlTree(id, folders, this.edits, this.spread, labels, this.controls(), this.shell.body);
     this.buttons = new HistoryButtons(toolbar, this.history);
     this.stop = DialStore.subscribe(id, () => this.render());
   }

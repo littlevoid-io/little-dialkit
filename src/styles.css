@@ -74,11 +74,6 @@
   color: var(--little-accent);
 }
 
-.little-button.little-apply[data-armed]:enabled {
-  color: #fff;
-  background: #c0392b;
-}
-
 /* Slider: the dimensions of DialKit's own. */
 .little-slider {
   position: relative;

@@ -32,6 +32,16 @@ describe('applyToVersions', () => {
     expect(held(null)).toMatchObject({ size: 8, blur: 2 });
   });
 
+  it('calls back while the selected version shows what it holds', () => {
+    DialStore.updateValues(ID, { size: 3, blur: 4 });
+    DialStore.savePreset(ID, 'Two');
+    DialStore.updateValues(ID, { size: 8, blur: 9 });
+    const seen: object[] = [];
+    applyToVersions(ID, ['size'], new Edits(ID).held, () => seen.push(DialStore.getValues(ID)));
+    expect(seen).toMatchObject([{ size: 8, blur: 4 }]);
+    expect(DialStore.getValues(ID)).toMatchObject({ size: 8, blur: 9 });
+  });
+
   it('writes from an edited base version', () => {
     const edits = new Edits(ID);
     DialStore.updateValue(ID, 'size', 3);
