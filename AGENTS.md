@@ -22,7 +22,11 @@ Library that adds mapping curves, undo, a versions menu with edit tracking, pers
 - **Versions:** DialKit's store holds them; the UI is `VersionMenu`: a button in the toolbar row (selected name, `*` with edits) and a popover (`popover="auto"`, appended to the root so it can show while the shell is collapsed) with a row per version and **Save as new version** (`DialStore.saveNewPreset`, then the name field). Rows are built on `beforetoggle` and removed on close; while open, the menu redraws only when what it shows changes (`shown`), so a name field survives store changes. The base version (`id` null) cannot be deleted. Delete needs a second click.
 - **Edits:** DialKit keeps edits apart from the selected version (`DialStore.hasEdits`) and merges them when the version is left (`loadPreset`, `clearActivePreset`) or on `keepEdits`. `Edits` compares the visible values with what the version holds: `Preset.values` for a saved version, an own copy for the base (private in DialKit), taken whenever the base is selected without edits. A page that starts on an edited base reads it once through a temporary version (`heldBase`), before `Undo` exists. `Panel.render` calls `Edits.update` first; rows, folders and the menu read from it.
 - **Explicit merge:** `VersionMenu.select` asks (Save / Discard / Cancel) before leaving an edited version; Discard writes the held values back, then selects, as one undo step. `DialStore.loadPreset` called directly still merges silently: hosts select through `panel.versions.select`. `exportVersions` merges too (a save).
-- **Reset buttons:** `ResetButton` appends its button to a control's row (`.little-row`) only while the control differs; `NativeControl` wraps DialKit's renderer in such a row, `CurveRow` covers value and curve. `ControlFolder` marks its title with `*`.
+- **Row buttons:** a control's row (`.little-row`) is the control, the curve button at full size (curve rows), then `RowButtons`: reset above apply to all versions (`.little-row-buttons`, a column as tall as the row, half a button wide). Both are always there; a disabled one is muted (`.little-button:disabled`). `NativeControl` wraps DialKit's renderer in such a row (actions hold no value: no buttons); `CurveRow` covers value and curve.
+- **Reset buttons:** `ResetButton` is enabled while the control differs. `ControlFolder` marks its title with `*`.
+- **Accent:** `--little-accent` (`.little-dialkit` in `styles.css`, own value, overridable by the host) colors what differs from the usual: an enabled reset button, the curve button of a curve other than linear. DialKit's own controls and folder titles are not restyled.
+- **Action row:** `actionRow(actions)` returns a row of icon buttons sharing the panel's width (label as tooltip, icon as stroked paths in a 24 x 24 box), for `Panel.slot`.
+- **Apply to all versions:** `ApplyButton` arms on the first click and applies on the second (leaving it disarms); disabled while the base is the only version. `Spread.apply` → `applyToVersions`: the visible values at the control's path and below go into every other version (select, `updateValues`, `keepEdits` per version). The selected version is set to what it holds before it is left, so DialKit merges nothing into it, and gets its edits back after: it keeps what it held, and an applied edit stays an edit there until saved. Runs in `Undo.suspend`; the visible values end as they were, so there is no undo step and no way to undo it.
 - **Version data:** `exportVersions` / `importVersions` move versions as plain data through documented `DialStore` calls. The base version's values are readable only while it is selected, so export selects the base and reselects the version; that keeps pending edits in the version. Import deletes all versions, writes the base, then per version writes the values and calls `savePreset`. DialKit generates version ids, so `active` is a name. `Panel` wraps both in `Undo.suspend` so the switching is not recorded; an import is one undo step of the visible values. Transport (download, request, dev-server route) is the consumer's.
 - **Labels:** DialKit has no label option for controls; it derives labels from keys. `labels` (by control path) replaces `ControlMeta.label` on the copy `ControlTree` hands to the folder, curve row or DialKit's renderer. Action labels are DialKit's own (`ActionConfig.label`).
 - **Slot:** `Panel.slot` (`.little-slot`, `display: contents`) sits in the shell body above the controls. Its children are the consumer's and lay out as panel rows.
@@ -41,9 +45,13 @@ Library that adds mapping curves, undo, a versions menu with edit tracking, pers
 | `src/shellState.ts` | Persisted open state, corner and offset |
 | `src/controlTree.ts` | Walks DialKit's `ControlMeta` tree: folders, curve rows, native controls |
 | `src/controlFolder.ts` | Folder: kept open state, lazy content, edit mark |
-| `src/nativeControl.ts` | DialKit control via `mountControlRenderer`, in a row with the reset button |
+| `src/nativeControl.ts` | DialKit control via `mountControlRenderer`, in a row with its buttons |
 | `src/edits.ts` | `Edits`: which values differ from the selected version, reset |
+| `src/rowButtons.ts` | Reset and apply buttons of a control row, stacked |
+| `src/actionRow.ts` | `actionRow`: row of icon buttons for the slot |
 | `src/resetButton.ts` | Reset button of a control row |
+| `src/applyButton.ts` | Apply-to-all-versions button of a control row |
+| `src/spread.ts` | `applyToVersions` on `DialStore`; `Spread`: per panel, with edits and undo |
 | `src/curveConfig.ts` | `curve()` config helper, `isCurve` |
 | `src/curveModel.ts` | Store access and position for one curve parameter |
 | `src/curveSlider.ts` | Own slider: pointer, keyboard, typed value |
@@ -83,7 +91,7 @@ Library that adds mapping curves, undo, a versions menu with edit tracking, pers
 
 ## Verification
 
-- Unit tests cover `curves.ts`, `history.ts` (including availability and subscriptions) `placement.ts`, `versionData.ts` and `edits.ts` (the last two against DialKit's real store). There are no DOM tests.
+- Unit tests cover `curves.ts`, `history.ts` (including availability and subscriptions) `placement.ts`, `versionData.ts`, `edits.ts` and `spread.ts` (the last three against DialKit's real store). There are no DOM tests.
 - Check UI changes on the demo page (`?docked`, `?position=<corner>`). Automated drag-and-drop helpers do not send `pointermove` / `pointerup` to the slider or the shell; dispatch pointer events or drag by hand.
 
 ## Not built yet

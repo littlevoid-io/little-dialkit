@@ -12,6 +12,8 @@
   --little-text-strong: var(--dial-text-primary, rgba(255, 255, 255, 0.95));
   --little-text-faint: var(--dial-text-tertiary, rgba(255, 255, 255, 0.4));
   --little-focus-ring: var(--dial-focus-ring, rgba(255, 255, 255, 0.6));
+  /* What differs from the usual: an edited control's reset button, a curve other than linear. */
+  --little-accent: #8fa6f7;
   --little-menu: var(--dial-dropdown-bg, #2a2a2a);
   --little-menu-shadow: var(--dial-shadow-dropdown, 0 8px 24px rgba(0, 0, 0, 0.4));
 }
@@ -33,7 +35,7 @@
   user-select: none;
 }
 
-/* A control's row: the control, then its buttons (curve, reset). */
+/* A control's row: the control, then its buttons. */
 .little-row {
   display: flex;
   align-items: center;
@@ -43,6 +45,38 @@
 .little-row-control {
   flex: 1;
   min-width: 0;
+}
+
+/* Row buttons: reset above apply to all versions, together as tall as the row. */
+.little-row-buttons {
+  --little-stack-gap: 2px;
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--little-stack-gap);
+  width: calc((var(--little-row-height) - var(--little-stack-gap)) / 2);
+  height: var(--little-row-height);
+}
+
+.little-row-buttons .little-button {
+  flex: 1;
+  width: auto;
+  height: auto;
+  border-radius: 4px;
+}
+
+.little-row-buttons .little-icon {
+  width: 11px;
+  height: 11px;
+}
+
+.little-reset:enabled {
+  color: var(--little-accent);
+}
+
+.little-button.little-apply[data-armed]:enabled {
+  color: #fff;
+  background: #c0392b;
 }
 
 /* Slider: the dimensions of DialKit's own. */
@@ -147,12 +181,23 @@
   min-width: 0;
 }
 
+/* Action row: icon buttons sharing the panel's width. */
+.little-action-row {
+  display: flex;
+  gap: var(--little-row-gap);
+}
+
+.little-action-row .little-button {
+  flex: 1;
+  width: auto;
+}
+
 /* The slot's rows are rows of the panel. */
 .little-slot {
   display: contents;
 }
 
-/* Square icon buttons: curve, reset, undo, redo */
+/* Square icon buttons: undo, redo, and the row buttons */
 .little-button {
   flex: none;
   display: grid;
@@ -195,7 +240,7 @@
 }
 
 .little-curve-button[data-mapped] {
-  color: var(--little-text-strong);
+  color: var(--little-accent);
 }
 
 .little-curve-icon {

@@ -12,6 +12,7 @@ export const ICONS = {
   remove: ['M3 6h18', 'M8 6V4h8v2', 'M19 6l-1 14H6L5 6'],
   add: ['M12 5v14', 'M5 12h14'],
   expand: ['m6 9 6 6 6-6'],
+  versions: ['M12 2 2 7l10 5 10-5-10-5Z', 'm2 12 10 5 10-5', 'm2 17 10 5 10-5'],
 } satisfies Record<string, string[]>;
 
 export function icon(paths: string[]): SVGSVGElement {

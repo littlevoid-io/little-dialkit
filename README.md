@@ -7,7 +7,10 @@ Additions to [DialKit](https://github.com/joshpuckett/dialkit) panels in plain T
 - Folders that stay open or closed across reloads
 - A docked or floating panel built from DialKit's own controls, store, versions and persistence
 - A versions menu: select, rename, delete, save as new; edits are marked and become part of a version only when saved
-- A reset button on every control that differs from the selected version
+- A reset button on every control, enabled while it differs from the selected version
+- An apply-to-all-versions button on every control: writes its value into all other versions (second click confirms)
+- `--little-accent`: color of what is changed (enabled reset buttons, curves other than linear); set it on `.little-dialkit` to change it
+- `actionRow([{ label, icon, run }])`: a row of icon buttons for `panel.slot`
 - Versions as plain data, to save to a file or send to a server
 
 ## Setup

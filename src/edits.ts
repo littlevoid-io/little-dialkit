@@ -61,7 +61,7 @@ export class Edits {
   }
 
   /** What the selected version holds. */
-  private get held(): Values {
+  public get held(): Values {
     const activeId = DialStore.getActivePresetId(this.panelId);
     return DialStore.getPresets(this.panelId).find(({ id }) => id === activeId)?.values ?? this.base;
   }

@@ -7,6 +7,7 @@ import type { Mounted } from './dom';
 import type { Edits } from './edits';
 import type { FolderState } from './folderState';
 import { NativeControl } from './nativeControl';
+import type { Spread } from './spread';
 
 /** The controls of a panel: DialKit folders and controls, with curve rows for the `curve()` pairs. */
 export class ControlTree implements Mounted {
@@ -17,6 +18,7 @@ export class ControlTree implements Mounted {
     private readonly panelId: string,
     private readonly folderState: FolderState,
     private readonly edits: Edits,
+    private readonly spread: Spread,
     private readonly labels: Record<string, string>,
     controls: ControlMeta[],
     host: HTMLElement,
@@ -37,8 +39,8 @@ export class ControlTree implements Mounted {
   }
 
   private mount(meta: ControlMeta, host: HTMLElement): Mounted {
-    if (isCurve(meta)) return new CurveRow(host, new CurveModel(this.panelId, meta), this.edits, meta.path);
-    if (meta.type !== 'folder') return new NativeControl(host, this.panelId, meta, this.edits);
+    if (isCurve(meta)) return new CurveRow(host, new CurveModel(this.panelId, meta), this.edits, this.spread, meta.path);
+    if (meta.type !== 'folder') return new NativeControl(host, this.panelId, meta, this.edits, this.spread);
     return new ControlFolder(host, meta, this.folderState, this.edits, (body) => this.build(meta.children ?? [], body));
   }
 }

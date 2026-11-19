@@ -9,11 +9,12 @@ import { FloatingShell } from './floatingShell';
 import { FolderState } from './folderState';
 import { HistoryButtons } from './historyButtons';
 import type { PanelOptions } from './panelOptions';
+import { Spread } from './spread';
 import { Undo } from './undo';
 import { exportVersions, importVersions, type VersionData } from './versionData';
 import { VersionMenu } from './versionMenu';
 
-/** A DialKit panel, docked or floating, with curve rows, undo, a versions menu, reset buttons for edited controls and folders that stay open or closed across reloads. */
+/** A DialKit panel, docked or floating, with curve rows, undo, a versions menu, reset and apply-to-all-versions buttons on the controls and folders that stay open or closed across reloads. */
 export class Panel<Config extends DialConfig> {
   /** DialKit's controller: values, subscriptions and versions. */
   public readonly kit: DialKitController<Config>;
@@ -46,7 +47,7 @@ export class Panel<Config extends DialConfig> {
     this.history = new Undo(id, `little-dialkit:${id}:history`);
     this.versions = new VersionMenu(id, this.root, toolbar, this.edits, this.history);
     this.shell.body.append(this.slot);
-    this.tree = new ControlTree(id, folders, this.edits, labels, this.controls(), this.shell.body);
+    this.tree = new ControlTree(id, folders, this.edits, new Spread(id, this.edits, this.history), labels, this.controls(), this.shell.body);
     this.buttons = new HistoryButtons(toolbar, this.history);
     this.stop = DialStore.subscribe(id, () => this.render());
   }
