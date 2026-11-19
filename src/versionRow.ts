@@ -1,5 +1,6 @@
 import { element } from './dom';
 import { ICONS, iconButton } from './icon';
+import { dragToSort } from './versionDrag';
 import type { VersionEntry } from './versions';
 
 const ACTION = 'little-version-action';
@@ -17,6 +18,8 @@ export interface RowActions {
   edit(entry: VersionEntry): void;
   rename(entry: VersionEntry, name: string): void;
   remove(entry: VersionEntry): void;
+  /** Puts the saved version `id` before the saved version `target`, or `after` it. */
+  move(id: string, target: string, after: boolean): void;
   save(): void;
   discard(): void;
 }
@@ -69,11 +72,13 @@ function buttons(entry: VersionEntry, { active, edited }: RowState, actions: Row
   return list;
 }
 
-/** One version in the menu: its name, or the field renaming it, and its buttons. */
+/** One version in the menu: its name, or the field renaming it, and its buttons. Saved versions are dragged to sort them; the base stays first. */
 export function versionRow(entry: VersionEntry, state: RowState, actions: RowActions): HTMLElement {
   const row = element('div', 'little-version');
   row.toggleAttribute('data-active', state.active);
   row.toggleAttribute('data-edited', state.active && state.edited);
   row.append(state.renaming ? nameField(entry, actions) : nameButton(entry, state, actions), ...buttons(entry, state, actions));
+  // Not while renaming: a drag in the field selects text.
+  if (entry.id !== null && !state.renaming) dragToSort(row, entry.id, (...order) => actions.move(...order));
   return row;
 }

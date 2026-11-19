@@ -390,6 +390,23 @@
   background: var(--little-surface-active);
 }
 
+/* Drag to sort: the dragged row fades, a line marks the edge it would drop at. */
+.little-version[draggable='true'] {
+  cursor: grab;
+}
+
+.little-version[data-dragged] {
+  opacity: 0.4;
+}
+
+.little-version[data-drop='before'] {
+  box-shadow: 0 -2px 0 var(--little-focus-ring);
+}
+
+.little-version[data-drop='after'] {
+  box-shadow: 0 2px 0 var(--little-focus-ring);
+}
+
 .little-version-name,
 .little-version-add,
 .little-version-choice {

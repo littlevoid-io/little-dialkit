@@ -3,13 +3,14 @@ import { element, type Mounted, placeBelow, textButton } from './dom';
 import type { Edits } from './edits';
 import { icon, ICONS } from './icon';
 import type { Undo } from './undo';
+import { moveVersion } from './versionOrder';
 import { versionPrompt } from './versionPrompt';
 import { type RowActions, versionRow } from './versionRow';
 import { activeVersion, listVersions, saveNewVersion, selectVersion, type VersionEntry } from './versions';
 
 /**
  * The versions of a panel: a button in the toolbar naming the selected one (with `*` while it has edits) and its menu:
- * select, rename, delete, save or discard the edits, save as a new version.
+ * select, rename, delete, drag to sort, save or discard the edits, save as a new version.
  * Edits become part of a version only when saved: leaving an edited version asks first.
  */
 export class VersionMenu implements Mounted, RowActions {
@@ -94,6 +95,11 @@ export class VersionMenu implements Mounted, RowActions {
     this.draw();
   }
 
+  /** Puts a saved version before or after another one (`moveVersion`). Not an undo step. */
+  public move(id: string, target: string, after: boolean): void {
+    this.history.suspend(() => moveVersion(this.panelId, id, target, after, this.edits.held));
+  }
+
   public update(): void {
     const { name } = this.active;
     this.label.textContent = this.edited ? `${name} *` : name;
@@ -117,8 +123,7 @@ export class VersionMenu implements Mounted, RowActions {
       return;
     }
     this.menu.replaceChildren();
-    this.pending = undefined;
-    this.renaming = undefined;
+    this.pending = this.renaming = undefined;
   }
 
   /** `keep`: the edits become part of the version that is left. One undo step. */
@@ -135,15 +140,11 @@ export class VersionMenu implements Mounted, RowActions {
     const shown = JSON.stringify({ entries, active, edited, pending, renaming: renaming ?? (renaming === null ? 'base' : '') });
     if (!this.open || shown === this.shown) return;
     this.shown = shown;
-    this.menu.replaceChildren(...(pending ? versionPrompt(active, pending, (keep) => this.leave(pending, keep), () => this.menu.hidePopover()) : this.list()));
+    const rows = entries.map((entry) => versionRow(entry, { active: entry.id === active.id, edited, renaming: entry.id === renaming }, this));
+    const prompt = pending && versionPrompt(active, pending, (keep) => this.leave(pending, keep), () => this.menu.hidePopover());
+    this.menu.replaceChildren(...(prompt ?? [...rows, textButton('little-version-add', 'Save as new version', () => this.add())]));
     const field = this.menu.querySelector('input');
     field?.focus();
     field?.select();
-  }
-
-  private list(): HTMLElement[] {
-    const { active, edited, renaming } = this;
-    const rows = this.entries.map((entry) => versionRow(entry, { active: entry.id === active.id, edited, renaming: entry.id === renaming }, this));
-    return [...rows, textButton('little-version-add', 'Save as new version', () => this.add())];
   }
 }
