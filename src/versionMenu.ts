@@ -1,8 +1,8 @@
 import { DialStore } from 'dialkit/vanilla';
 import { element, type Mounted, placeBelow, textButton } from './dom';
 import type { Edits } from './edits';
-import { icon, ICONS } from './icon';
 import type { Undo } from './undo';
+import { VersionButton } from './versionButton';
 import { moveVersion } from './versionOrder';
 import { versionPrompt } from './versionPrompt';
 import { type RowActions, versionRow } from './versionRow';
@@ -14,9 +14,8 @@ import { activeVersion, listVersions, saveNewVersion, selectVersion, type Versio
  * Edits become part of a version only when saved: leaving an edited version asks first.
  */
 export class VersionMenu implements Mounted, RowActions {
-  private readonly button = element('button', 'little-version-button');
-  private readonly label = element('span', 'little-version-label');
   private readonly menu = element('div', 'little-version-menu');
+  private readonly button = new VersionButton(this.menu);
   private open = false;
   /** What the open menu shows, to redraw it only when that changes. */
   private shown = '';
@@ -24,6 +23,9 @@ export class VersionMenu implements Mounted, RowActions {
   private pending: VersionEntry | undefined;
   /** Id of the version being renamed (null: the base); undefined: none. */
   private renaming: VersionEntry['id'] | undefined;
+  /** Called when a new version was saved (`add`), and again when its name is changed in the field `add` shows. */
+  public onAdd?: () => void;
+  private added: string | undefined;
 
   constructor(
     private readonly panelId: string,
@@ -32,12 +34,9 @@ export class VersionMenu implements Mounted, RowActions {
     private readonly edits: Edits,
     private readonly history: Undo,
   ) {
-    this.button.type = 'button';
-    this.button.popoverTargetElement = this.menu;
-    this.button.append(this.label, icon(ICONS.expand));
     this.menu.popover = 'auto';
     this.menu.addEventListener('beforetoggle', (event) => this.toggle(event.newState === 'open'));
-    toolbar.append(this.button);
+    toolbar.append(this.button.element);
     root.append(this.menu);
     this.update();
   }
@@ -71,6 +70,7 @@ export class VersionMenu implements Mounted, RowActions {
   public rename(entry: VersionEntry, name: string): void {
     this.renaming = undefined;
     if (name !== entry.name) DialStore.renamePreset(this.panelId, entry.id, name);
+    if (name !== entry.name && entry.id === this.added) this.onAdd?.();
     this.draw();
   }
 
@@ -90,7 +90,8 @@ export class VersionMenu implements Mounted, RowActions {
 
   /** Saves the visible values as a new version (`saveNewVersion`) and shows it in the menu, its name ready to be changed. The version left keeps what it held. */
   public add(): void {
-    this.renaming = saveNewVersion(this.panelId);
+    this.renaming = this.added = saveNewVersion(this.panelId);
+    this.onAdd?.();
     if (!this.open) this.menu.showPopover();
     this.draw();
   }
@@ -101,14 +102,12 @@ export class VersionMenu implements Mounted, RowActions {
   }
 
   public update(): void {
-    const { name } = this.active;
-    this.label.textContent = this.edited ? `${name} *` : name;
-    this.button.title = this.edited ? `Version: ${name} (edited)` : `Version: ${name}`;
+    this.button.show(this.active.name, this.edited);
     this.draw();
   }
 
   public destroy(): void {
-    this.button.remove();
+    this.button.element.remove();
     this.menu.remove();
   }
 
