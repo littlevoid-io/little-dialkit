@@ -350,8 +350,9 @@
   white-space: nowrap;
 }
 
-/* Versions menu: a popover in the top layer */
-.little-version-menu {
+/* Versions menu and prompt: a popover and a modal dialog in the top layer */
+.little-version-menu,
+.little-prompt {
   position: fixed;
   inset: auto;
   box-sizing: border-box;
@@ -404,7 +405,7 @@
 
 .little-version-name,
 .little-version-add,
-.little-version-choice {
+.little-prompt-choice {
   font: inherit;
   color: inherit;
   background: none;
@@ -483,29 +484,39 @@
   color: var(--little-text-strong);
 }
 
-.little-version-prompt {
+/* Nothing behind the prompt takes input; the dim shows it. */
+.little-prompt::backdrop {
+  background: rgba(0, 0, 0, 0.35);
+}
+
+.little-prompt-text {
   margin: 0;
   padding: 8px;
   line-height: 1.4;
   color: var(--little-text-strong);
 }
 
-.little-version-choices {
+.little-prompt-choices {
   display: flex;
   gap: 4px;
   padding: 0 4px 4px;
 }
 
-.little-version-choice {
+.little-prompt-choice {
   flex: 1;
   height: 28px;
   background: var(--little-surface);
   border-radius: 6px;
 }
 
-.little-version-choice:hover,
-.little-version-choice:focus-visible {
+.little-prompt-choice:hover {
   color: var(--little-text-strong);
   background: var(--little-surface-hover);
-  outline: none;
+}
+
+/* The focused choice is the one Enter takes. */
+.little-prompt-choice:focus-visible {
+  color: var(--little-text-strong);
+  outline: 2px solid var(--little-focus-ring);
+  outline-offset: -2px;
 }

@@ -1,9 +1,9 @@
 import { DialStore } from 'dialkit/vanilla';
 import type { Edits } from './edits';
+import type { Prompt } from './prompt';
 import type { Undo } from './undo';
 import type { Values } from './values';
 import { exportVersions, type VersionData } from './versionData';
-import type { VersionMenu } from './versionMenu';
 import { listVersions, selectVersion } from './versions';
 
 /**
@@ -37,7 +37,7 @@ export class Spread {
 
   constructor(
     private readonly panelId: string, private readonly edits: Edits, private readonly history: Undo,
-    private readonly versions: Pick<VersionMenu, 'ask'>,
+    private readonly prompt: Pick<Prompt, 'ask'>,
   ) {}
 
   /** There are other versions. */
@@ -45,9 +45,9 @@ export class Spread {
     return DialStore.getPresets(this.panelId).length > 0;
   }
 
-  /** Asks in the versions menu, then applies: an apply cannot be undone. */
+  /** Asks, then applies: an apply cannot be undone. */
   public ask(path: string): void {
-    this.versions.ask({ text: `Apply “${path}” to all versions? This cannot be undone.`, choices: { Apply: () => this.apply(path) } });
+    this.prompt.ask({ text: `Apply “${path}” to all versions? This cannot be undone.`, choices: { Apply: () => this.apply(path) } });
   }
 
   /** The value at `path`, and those below it, into every version. */

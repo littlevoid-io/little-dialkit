@@ -1,17 +1,20 @@
 import { DialStore } from 'dialkit/vanilla';
+import { copyToBase } from './defaultVersion';
 import { element, type Mounted, placeBelow, textButton } from './dom';
 import type { Edits } from './edits';
+import type { Prompt } from './prompt';
 import type { Undo } from './undo';
 import { VersionButton } from './versionButton';
+import { exportVersions, type VersionData } from './versionData';
 import { moveVersion } from './versionOrder';
-import { leaveQuestion, type Question, versionPrompt } from './versionPrompt';
+import { defaultQuestion, leaveQuestion } from './versionPrompt';
 import { type RowActions, versionRow } from './versionRow';
 import { activeVersion, listVersions, saveNewVersion, selectVersion, type VersionEntry } from './versions';
 
 /**
  * The versions of a panel: a button in the toolbar naming the selected one (with `*` while it has edits) and its menu:
- * select, rename, delete, drag to sort, save or discard the edits, save as a new version.
- * Edits become part of a version only when saved: leaving an edited version asks first.
+ * select, rename, set as default, delete, drag to sort, save or discard the edits, save as a new version.
+ * Edits become part of a version only when saved: leaving an edited version asks first (`Prompt`).
  */
 export class VersionMenu implements Mounted, RowActions {
   private readonly menu = element('div', 'little-version-menu');
@@ -19,16 +22,16 @@ export class VersionMenu implements Mounted, RowActions {
   /** The menu has its rows only while it is open. */
   private open = false;
   private shown = '';
-  /** Shown in place of the rows until answered. */
-  private question: Question | undefined;
   /** Id of the version being renamed (null: the base); undefined: none. */
   private renaming: VersionEntry['id'] | undefined;
   /** Called when a new version was saved (`add`), and again when its name is changed in the field `add` shows. */
   public onAdd?: () => void;
   private added: string | undefined;
+  /** Called after a version was copied to the base (`makeDefault`), with the versions as they are held. */
+  public onDefault?: (data: VersionData) => void;
 
   constructor(
-    private readonly panelId: string, private readonly root: HTMLElement, private readonly toolbar: HTMLElement, private readonly edits: Edits, private readonly history: Undo,
+    private readonly panelId: string, private readonly root: HTMLElement, private readonly toolbar: HTMLElement, private readonly edits: Edits, private readonly history: Undo, private readonly prompt: Prompt,
   ) {
     this.menu.popover = 'auto';
     this.menu.addEventListener('beforetoggle', (event) => this.toggle(event.newState === 'open'));
@@ -49,18 +52,17 @@ export class VersionMenu implements Mounted, RowActions {
     return this.edits.any;
   }
 
-  /** Selects a version. With edits on the selected one, the menu opens and asks to save or discard them. */
+  /** Selects a version. With edits on the selected one, asks to save or discard them first. */
   public select(entry: VersionEntry): void {
     if (entry.id === this.active.id) return this.menu.hidePopover();
     if (!this.edited) return this.leave(entry, true);
-    this.ask(leaveQuestion(this.active, entry, (keep) => this.leave(entry, keep)));
+    this.prompt.ask(leaveQuestion(this.active, entry, (keep) => this.leave(entry, keep)));
   }
 
-  /** Opens the menu on a question in place of its rows. A choice, or Cancel, closes it. */
-  public ask(question: Question): void {
-    this.question = question;
-    if (!this.open) this.menu.showPopover();
-    this.draw();
+  /** After asking, copies what a saved version holds to the base (`copyToBase`). Not an undo step. */
+  public makeDefault(entry: VersionEntry): void {
+    const copy = () => this.history.suspend(() => copyToBase(this.panelId, entry.id, this.edits.held, () => this.onDefault?.(exportVersions(this.panelId))));
+    this.prompt.ask(defaultQuestion(entry, this.entries[0], copy));
   }
 
   public edit(entry: VersionEntry): void {
@@ -92,7 +94,6 @@ export class VersionMenu implements Mounted, RowActions {
   /** Saves the visible values as a new version (`saveNewVersion`) and shows it in the menu, its name ready to be changed. The version left keeps what it held. */
   public add(): void {
     this.renaming = this.added = saveNewVersion(this.panelId);
-    this.question = undefined;
     this.onAdd?.();
     if (!this.open) this.menu.showPopover();
     this.draw();
@@ -123,7 +124,7 @@ export class VersionMenu implements Mounted, RowActions {
       return;
     }
     this.menu.replaceChildren();
-    this.question = this.renaming = undefined;
+    this.renaming = undefined;
   }
 
   /** `keep`: the edits become part of the version that is left. One undo step. */
@@ -136,13 +137,12 @@ export class VersionMenu implements Mounted, RowActions {
   }
 
   private draw(): void {
-    const { entries, active, edited, question, renaming } = this;
-    const shown = JSON.stringify({ entries, active, edited, question: question?.text, renaming: renaming ?? (renaming === null ? 'base' : '') });
+    const { entries, active, edited, renaming } = this;
+    const shown = JSON.stringify({ entries, active, edited, renaming: renaming ?? (renaming === null ? 'base' : '') });
     if (!this.open || shown === this.shown) return;
     this.shown = shown;
     const rows = entries.map((entry) => versionRow(entry, { active: entry.id === active.id, edited, renaming: entry.id === renaming }, this));
-    const prompt = question && versionPrompt(question, () => this.menu.hidePopover());
-    this.menu.replaceChildren(...(prompt ?? [...rows, textButton('little-version-add', 'Save as new version', () => this.add())]));
+    this.menu.replaceChildren(...rows, textButton('little-version-add', 'Save as new version', () => this.add()));
     const field = this.menu.querySelector('input');
     field?.focus();
     field?.select();

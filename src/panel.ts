@@ -10,6 +10,7 @@ import { FloatingShell } from './floatingShell';
 import { FolderState } from './folderState';
 import { HistoryButtons } from './historyButtons';
 import type { PanelOptions } from './panelOptions';
+import { Prompt } from './prompt';
 import { Shortcuts } from './shortcuts';
 import { Spread } from './spread';
 import { Undo } from './undo';
@@ -27,6 +28,8 @@ export class Panel<Config extends DialConfig> {
   public readonly actions: Actions;
   /** Apply to all versions: what the button of a control's row does, with a hook for the page. */
   public readonly spread: Spread;
+  /** The modal dialog the panel asks its questions in: `ask` it one of the page's own. */
+  public readonly prompt: Prompt;
   private readonly shortcuts: Shortcuts;
   /** Above the controls: for rows of the page's own, such as DialKit's `mountSlider`. Not part of values, versions or undo. */
   public readonly slot = element('div', 'little-slot');
@@ -52,11 +55,12 @@ export class Panel<Config extends DialConfig> {
     const folders = new FolderState(`little-dialkit:${id}:folders`);
     this.edits = new Edits(id);
     this.history = new Undo(id, `little-dialkit:${id}:undo`, this.edits);
-    this.versions = new VersionMenu(id, this.root, toolbar, this.edits, this.history);
+    this.prompt = new Prompt(this.root, toolbar);
+    this.versions = new VersionMenu(id, this.root, toolbar, this.edits, this.history, this.prompt);
     this.actions = new Actions(this);
     this.shortcuts = new Shortcuts(this.actions, this.versions, this.history);
     this.shell.body.append(this.actions.row(options.actions ?? {}) ?? '', this.slot);
-    this.spread = new Spread(id, this.edits, this.history, this.versions);
+    this.spread = new Spread(id, this.edits, this.history, this.prompt);
     this.tree = new ControlTree(id, folders, this.edits, this.spread, labels, this.controls(), this.shell.body);
     this.buttons = new HistoryButtons(toolbar, this.history);
     this.stop = DialStore.subscribe(id, () => this.render());

@@ -8,7 +8,7 @@ Additions to [DialKit](https://github.com/joshpuckett/dialkit) panels in plain T
 - A docked or floating panel built from DialKit's own controls, store, versions and persistence
 - A versions menu: select, rename, delete, drag to sort, save as new; edits are marked and become part of a version only when saved
 - A reset button on every control, enabled while it differs from the selected version
-- An apply-to-all-versions button on every control: after a confirm in the versions menu, writes its live value (a curve slider: value and curve) into every version, whatever they hold. Other edits on the selected version stay edits. Not an undo step. `panel.spread.ask(path)` does the same from code, `apply(path)` without asking; `panel.spread.onApply` is called with the versions after it (for example to write them to a file)
+- An apply-to-all-versions button on every control: after a confirm (the panel's prompt), writes its live value (a curve slider: value and curve) into every version, whatever they hold. Other edits on the selected version stay edits. Not an undo step. `panel.spread.ask(path)` does the same from code, `apply(path)` without asking; `panel.spread.onApply` is called with the versions after it (for example to write them to a file)
 - `--little-accent`: color of what is changed (enabled reset buttons, curves other than linear); set it on `.little-dialkit` to change it
 - `actionRow([{ label, icon, run }])`: a row of icon buttons for `panel.slot`
 - Versions as plain data, to save to a file or send to a server
@@ -50,11 +50,13 @@ panel.kit.subscribe((values) => {
   | `Ctrl+S` | Save the edits into the selected version, then call `panel.actions.onSave` (for example to write the versions to a file) |
   | `Ctrl+Shift+S` | Save as a new version (calls `panel.versions.onAdd`) |
   | `[` / `]` | Select the previous / next version; wraps at the ends |
-  | `Escape` | Reset: discard the edits on the selected version, after a confirm dialog. `panel.actions.onReset` takes its place when set |
+  | `Escape` | Reset: discard the edits on the selected version, after a confirm (the panel's prompt). `panel.actions.onReset` takes its place when set |
   | `Ctrl+Z` / `Ctrl+Shift+Z` or `Ctrl+Y` | Undo / redo |
 
 - The button next to undo / redo names the selected version, with `*` while it has edits, and opens the versions menu. Folders with edited controls carry the same mark.
 - Edits stay apart from the version until saved (check mark in the menu) or discarded. Selecting another version asks to save or discard them first.
+- A saved version's star button sets it as the default: after a confirm, all it holds (without unsaved edits) is copied to the first version, replacing what that held. Not an undo step. `panel.versions.makeDefault(entry)` does the same from code; `panel.versions.onDefault` is called with the versions after it (for example to write them to a file).
+- The panel asks in a modal dialog under its toolbar (`panel.prompt`): nothing else on the page takes input while it is open, Enter takes the first choice, Escape cancels. `panel.prompt.ask({ text, choices })` asks a question of the page's own; `choices` holds what to do by button label, Cancel is added.
 - `panel.versions`: `entries`, `active`, `edited`, `select(entry)` (asks like the menu), `save()`, `discard()`, `add()` (saves a new version named after the selected one, `name` -> `name-v02` -> `name-v03`, and opens the menu on its name field), `rename(entry, name)`, `remove(entry)`, `onAdd` (set it to be called when a new version was saved, by `add()` or the menu, and again when its name is changed in the field that opens; for example to write the versions to a file), `move(id, target, after)` (puts a saved version before or after another one; the menu does it on drag and drop).
 - Saved versions are dragged in the menu to sort them; the base version stays first. A reorder gives the saved versions new ids.
 - `labels: { 'blur.radius': 'Radius (px)' }` sets labels by control path; DialKit derives the others from the keys.

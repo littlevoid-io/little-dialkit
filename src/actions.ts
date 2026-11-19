@@ -23,7 +23,7 @@ export class Actions {
   /** Takes the place of `reset`'s own step: for a page that keeps the versions somewhere and reads them again. Asking first is the page's. */
   public onReset?: () => void;
 
-  constructor(private readonly panel: Pick<Panel<DialConfig>, 'kit' | 'versions' | 'exportVersions'>) {}
+  constructor(private readonly panel: Pick<Panel<DialConfig>, 'kit' | 'versions' | 'prompt' | 'exportVersions'>) {}
 
   public save(): void {
     this.panel.versions.save();
@@ -38,8 +38,9 @@ export class Actions {
   /** Discards the edits on the selected version, after asking. */
   public reset(): void {
     if (this.onReset) return this.onReset();
-    const { edited, active } = this.panel.versions;
-    if (edited && confirm(`Discard the edits on "${active.name}"?`)) this.panel.versions.discard();
+    const { versions, prompt } = this.panel;
+    if (!versions.edited) return;
+    prompt.ask({ text: `Discard the edits on “${versions.active.name}”?`, choices: { Discard: () => versions.discard() } });
   }
 
   /** Downloads all versions as `<panel id>-versions.json` (`VersionData`). Edits on the selected version become part of it. */

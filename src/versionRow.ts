@@ -18,6 +18,8 @@ export interface RowActions {
   edit(entry: VersionEntry): void;
   rename(entry: VersionEntry, name: string): void;
   remove(entry: VersionEntry): void;
+  /** Copies the saved version to the base, after asking. */
+  makeDefault(entry: VersionEntry): void;
   /** Puts the saved version `id` before the saved version `target`, or `after` it. */
   move(id: string, target: string, after: boolean): void;
   save(): void;
@@ -68,7 +70,8 @@ function buttons(entry: VersionEntry, { active, edited }: RowState, actions: Row
       iconButton(ACTION, 'Discard changes', ICONS.reset, () => actions.discard()),
     );
   }
-  if (entry.id !== null) list.push(removeButton(entry, actions));
+  if (entry.id === null) return list;
+  list.push(iconButton(ACTION, 'Set as default: copy its values to the first version', ICONS.star, () => actions.makeDefault(entry)), removeButton(entry, actions));
   return list;
 }
 
