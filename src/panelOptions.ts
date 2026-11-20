@@ -1,4 +1,5 @@
 import type { ActionChoice } from './actions';
+import type { CanvasSource } from './capture';
 import type { CreateDialOptions, DialMode, DialRootOptions, DialTheme } from 'dialkit/vanilla';
 
 interface CommonOptions extends CreateDialOptions {
@@ -9,6 +10,8 @@ interface CommonOptions extends CreateDialOptions {
   labels?: Record<string, string>;
   /** Buttons of the action row under the toolbar (save, save as new version, reset, export to a file): all, unless set to false. */
   actions?: ActionChoice;
+  /** The canvas the screenshot and record buttons capture, asked on every capture. Left out: the largest visible canvas of the page. */
+  canvas?: CanvasSource;
 }
 
 /** A panel docked into `target`, always open. */

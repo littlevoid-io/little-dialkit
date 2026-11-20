@@ -3,6 +3,7 @@ import {
   mountFolder, mountShortcutListener,
 } from 'dialkit/vanilla';
 import { Actions } from './actions';
+import { Capture } from './capture';
 import { ControlTree } from './controlTree';
 import { element } from './dom';
 import { Edits } from './edits';
@@ -26,6 +27,8 @@ export class Panel<Config extends DialConfig> {
   public readonly versions: VersionMenu;
   /** Save, save as a new version, reset and export: what the action row and the keys do, with hooks for the page. */
   public readonly actions: Actions;
+  /** Screenshot and recording of the page's canvas: what the action row's last two buttons do. */
+  public readonly capture: Capture;
   /** Apply to all versions: what the button of a control's row does, with a hook for the page. */
   public readonly spread: Spread;
   /** The modal dialog the panel asks its questions in: `ask` it one of the page's own. */
@@ -57,6 +60,7 @@ export class Panel<Config extends DialConfig> {
     this.history = new Undo(id, `little-dialkit:${id}:undo`, this.edits);
     this.prompt = new Prompt(this.root, toolbar);
     this.versions = new VersionMenu(id, this.root, toolbar, this.edits, this.history, this.prompt);
+    this.capture = new Capture(this, options.canvas);
     this.actions = new Actions(this);
     this.shortcuts = new Shortcuts(this.actions, this.versions, this.history);
     this.shell.body.append(this.actions.row(options.actions ?? {}) ?? '', this.slot);
@@ -78,6 +82,7 @@ export class Panel<Config extends DialConfig> {
 
   public destroy(): void {
     this.stop();
+    this.capture.destroy();
     this.buttons.destroy();
     this.history.destroy();
     this.tree.destroy();

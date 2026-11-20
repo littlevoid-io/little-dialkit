@@ -16,6 +16,7 @@
   --little-focus-ring: var(--dial-focus-ring, rgba(255, 255, 255, 0.6));
   /* What differs from the usual: an edited control's reset button, a curve other than linear. */
   --little-accent: #8fa6f7;
+  --little-recording: #f26d6d;
   --little-menu: var(--dial-dropdown-bg, #2a2a2a);
   --little-menu-shadow: var(--dial-shadow-dropdown, 0 8px 24px rgba(0, 0, 0, 0.4));
 }
@@ -222,6 +223,15 @@
 .little-button:hover:enabled {
   color: var(--little-text-strong);
   background: var(--little-surface-hover);
+}
+
+/* A running recording: the record button, filled. */
+.little-button[aria-pressed='true']:enabled {
+  color: var(--little-recording);
+}
+
+.little-button[aria-pressed='true'] .little-icon {
+  fill: currentColor;
 }
 
 .little-button:disabled {

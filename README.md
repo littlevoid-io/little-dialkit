@@ -44,6 +44,7 @@ panel.kit.subscribe((values) => {
 - `panel.kit` is DialKit's controller: `getValues`, `setValues`, `subscribe`, `resetValues`.
 - `panel.history.undo()` and `panel.history.redo()`; `canUndo` and `canRedo` tell whether a step is left, `subscribe(listener)` reports changes. A step holds the values and the selected version: undo after a version switch selects the version left.
 - A row of buttons under the toolbar: save, save as new version, reset (as the keys below) and export (downloads all versions as `<id>-versions.json`). `actions: { export: false }` in the options leaves a button out. `panel.actions.save()`, `saveAs()`, `reset()` and `export()` do the same from code.
+- The row's last two buttons capture the page's canvas: screenshot (PNG at the canvas's resolution) and record (click to start, again to stop; MP4 where the browser records it, else WebM). Files are named `<id>-<version>-<date>-<time>`. The canvas is the largest visible one on the page, or what `canvas: () => element` in the options returns. `panel.capture.screenshot()` and `record()` do the same from code; `panel.capture.onRecording` is called when a recording starts and stops. `actions: { screenshot: false, record: false }` leaves the buttons out.
 - Keys (Cmd for Ctrl on macOS; not while a text field has the focus):
 
   | Key | Action |
@@ -134,6 +135,8 @@ The route accepts any request that reaches the dev server. Keep the server on lo
 - **`position` has no effect:** a stored position wins. Delete `little-dialkit:<id>:shell` from localStorage.
 - **Release stops at npm:** run `npm login` first.
 - **Release fails with `Invalid configuration file at .release-it`:** run `gh auth login`, or set `GITHUB_TOKEN`.
+- **Blank screenshot:** the page draws its WebGL canvas on demand. Create the context with `preserveDrawingBuffer: true`, or draw every frame.
+- **Recording stutters:** it is encoded as the page plays, so frames the page drops are missing. Record at a smaller canvas size.
 - **Unstyled panel:** import both stylesheets, DialKit's first.
 
 See [AGENTS.md](AGENTS.md) for architecture and conventions.

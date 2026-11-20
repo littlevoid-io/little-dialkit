@@ -10,6 +10,7 @@
       #values { margin: 0; font: 12px/1.5 monospace; }
       nav { display: flex; flex-direction: column; gap: 4px; font: 12px/1.5 monospace; }
       nav a { color: inherit; }
+      canvas { display: block; margin: 16px 0; }
     </style>
   </head>
   <body>
@@ -22,6 +23,7 @@
         <a href="/?position=bottom-left">floating, bottom-left</a>
         <a href="/?position=bottom-right">floating, bottom-right</a>
       </nav>
+      <canvas id="canvas" width="480" height="270"></canvas>
       <pre id="values"></pre>
     </div>
     <script type="module" src="/demo/main.ts"></script>

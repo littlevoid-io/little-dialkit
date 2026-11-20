@@ -18,6 +18,7 @@ Library that adds mapping curves, undo, a versions menu with edit tracking, pers
 - **Curves:** all rise from 0 to 1, so `invert` is a bisection. Adding a curve that is not monotonic needs a different inverse.
 - **Undo:** `Undo` records what the panel shows (`Shown`, `versions.ts`: the store's flat values without actions, and the selected version's name) on every store change into `EditHistory` (zustand + zundo). Changes within 400 ms form one step. Restoring (`show`) selects the step's version, if one of that name still exists, then writes the values through `DialStore.updateValues`: undo after a version switch goes back to the version left, with the edits it had. The version shown is set to what it holds before it is left, so its edits are not merged into it (they are in the redo step). The version is a name because reordering and importing give versions new ids; a rename is a step of its own, and steps from before it restore values only.
 - **Actions:** `Actions` holds what the action row's buttons and the keys do: `save` (`VersionMenu.save`, then the `onSave` hook), `saveAs` (`VersionMenu.add`, which calls `onAdd`), `reset` (the `onReset` hook if set, else discard the edits after a `Prompt` question), `export` (downloads `Panel.exportVersions` as `<id>-versions.json`). `Actions.row` builds the row from the `actions` option (`ActionChoice`: a button is left out when false); `Panel` puts it between the toolbar and the slot.
+- **Capture:** `Capture` (`panel.capture`) is behind the action row's screenshot and record buttons. The canvas is looked up on every capture (`canvas` option, else `largestCanvas`: the largest visible one outside `.little-dialkit`), so one mounted after the panel is found; none: the `Prompt` says so. `snapshot` calls `toBlob` in an animation frame requested at the click: it runs after the page's own frame callback (registered a frame earlier), while a WebGL canvas without `preserveDrawingBuffer` still holds the frame. `Recording` is `canvas.captureStream()` into a `MediaRecorder` (first supported of MP4 / H.264, MP4, WebM; 8 bit/s per canvas pixel), encoded in real time. `Actions.showRecording` sets `aria-pressed` and the label of the record button from `Capture.onRecording` (`RowAction.mount` hands it the button). Files: `fileName` (`<id>-<version name>-<local date-time>.<extension>`), through `download`. Not built: tab capture (`getDisplayMedia`) for pages without a canvas, frame-accurate export, keys.
 - **Shortcuts:** `Shortcuts` (one window `keydown` listener per panel) maps a key name (`chord`: `ctrl+shift+s`, `[`, `escape`; Cmd is Ctrl, AltGr is not) to an action: `Actions.save`, `saveAs` and `reset`, previous / next version (`VersionMenu.select`, so edits are asked about), undo / redo. Skipped while a text field has the focus and when the event's default is already prevented (DialKit's controls do that for the Escape they take). Escape is also skipped while a popover is open (versions menu, curve picker). Several panels on a page all react.
 - **Toolbar row:** the undo / redo buttons and the version button share an own `.little-toolbar` flex element inside DialKit's shell toolbar, so no DialKit class is restyled. The buttons follow `Undo.subscribe` (zundo's temporal store), which covers changes, undo, redo and steps restored from sessionStorage.
 - **Floating shell:** `mode: 'popover'` (DialKit's name; docked is the default so existing `target` setups keep working). DialKit's non-inline root folder is the shell and provides size, look, scrolling (max height, `overflow-y`) and the collapse to an icon through `open`, `onOpenChange`. Open state lives in `DialStore` (`kit.getOpen` / `kit.setOpen`), so outside callers and the folder's own toggle meet there. Own code covers what DialKit does not export: corner placement and margin (`.little-floating`, `data-position`), the header drag, clamping, persistence.
@@ -68,6 +69,9 @@ Library that adds mapping curves, undo, a versions menu with edit tracking, pers
 | `src/folderState.ts` | Folder open state by control path |
 | `src/undo.ts`, `src/history.ts` | Undo binding and history store; `canUndo`, `canRedo`, `subscribe` expose availability; `suspend` runs changes that are not steps |
 | `src/actions.ts` | `Actions`: save, save as new, reset, export; their button row; `onSave` / `onReset` hooks |
+| `src/capture.ts` | `Capture`: screenshot and recording of the page's canvas; `largestCanvas`, `snapshot`, `fileName` |
+| `src/recording.ts` | `Recording`: one running `MediaRecorder` on a canvas stream |
+| `src/download.ts` | `download`: a `Blob` as a file to save |
 | `src/shortcuts.ts` | `Shortcuts`: the panel's keys; `chord` names the keys of an event |
 | `src/versions.ts` | `listVersions`, `activeVersion`, `selectVersion` on `DialStore` |
 | `src/versionMenu.ts`, `src/versionButton.ts`, `src/versionRow.ts`, `src/versionPrompt.ts` | Versions menu; its toolbar button; one menu row; the questions it asks (save / discard, set as default) |
@@ -80,7 +84,7 @@ Library that adds mapping curves, undo, a versions menu with edit tracking, pers
 | `src/historyButtons.ts` | Undo / redo buttons, disabled by availability |
 | `src/styles.css` | Styles for own elements only |
 | `build/dialVariables.ts` | Vite plugin: warns when DialKit's stylesheet no longer declares a `--dial-*` variable named in `src/styles.css` |
-| `demo/main.ts`, `index.html` | Demo page for `npm run dev` |
+| `demo/main.ts`, `demo/canvas.ts`, `index.html` | Demo page for `npm run dev`; an animated WebGL canvas for the capture buttons |
 
 ## Storage
 
@@ -106,6 +110,7 @@ Library that adds mapping curves, undo, a versions menu with edit tracking, pers
 
 ## Verification
 
+- Capture has unit tests for the file name only. Check screenshot and recording on the demo page's canvas: the PNG shows the bar, the video plays.
 - Unit tests cover `curves.ts`, `history.ts` (including availability and subscriptions) `placement.ts`, `versionData.ts`, `versionOrder.ts`, `edits.ts` and `spread.ts` (the last four against DialKit's real store). There are no DOM tests.
 - Check UI changes on the demo page (`?docked`, `?position=<corner>`). Automated drag-and-drop helpers do not send `pointermove` / `pointerup` to the slider or the shell; dispatch pointer events or drag by hand.
 

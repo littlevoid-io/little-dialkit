@@ -14,6 +14,8 @@ export const ICONS = {
   disk: ['M5 3h11l3 3v15H5Z', 'M8 3v5h7', 'M8 21v-7h8v7'],
   copy: ['M9 9h11v11H9Z', 'M5 15H4V4h11v1'],
   download: ['M12 3v12', 'm7 10 5 5 5-5', 'M5 21h14'],
+  camera: ['M3 7h4l2-3h6l2 3h4v13H3Z', 'M12 9.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Z'],
+  record: ['M12 4a8 8 0 1 0 0 16 8 8 0 0 0 0-16Z'],
   add: ['M12 5v14', 'M5 12h14'],
   expand: ['m6 9 6 6 6-6'],
   versions: ['M12 2 2 7l10 5 10-5-10-5Z', 'm2 12 10 5 10-5', 'm2 17 10 5 10-5'],

@@ -2,6 +2,7 @@ import 'dialkit/vanilla/styles.css';
 import '../src/styles.css';
 import type { DialConfig, DialPosition } from 'dialkit/vanilla';
 import { curve, Panel } from '../src';
+import { animate } from './canvas';
 
 const ID = 'little-dialkit-demo';
 const CORNERS: DialPosition[] = ['top-right', 'top-left', 'bottom-right', 'bottom-left'];
@@ -55,7 +56,9 @@ const ACTIONS: Record<string, () => void> = {
 
 const target = document.querySelector<HTMLElement>('#panel');
 const output = document.querySelector<HTMLElement>('#values');
-if (!target || !output) throw new Error('Demo page is missing #panel or #values');
+const canvas = document.querySelector<HTMLCanvasElement>('#canvas');
+if (!target || !output || !canvas) throw new Error('Demo page is missing #panel, #values or #canvas');
+animate(canvas);
 
 // `?docked` docks the panel into #panel; `?position=<corner>` starts the floating panel there and forgets a saved position.
 const params = new URLSearchParams(location.search);
