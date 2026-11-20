@@ -7,11 +7,11 @@
     "isolatedModules": true,
     "moduleDetection": "force",
     "skipLibCheck": true,
-    "types": ["vite/client"],
+    "types": ["vite/client", "node"],
     "noEmit": true,
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true
   },
-  "include": ["src", "demo", "vite.config.ts"]
+  "include": ["src", "demo", "build", "vite.config.ts"]
 }

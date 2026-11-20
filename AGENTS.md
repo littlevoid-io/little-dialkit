@@ -6,7 +6,7 @@ Library that adds mapping curves, undo, a versions menu with edit tracking, pers
 
 - Use only what `dialkit/vanilla` exports and types. No private members, no DialKit DOM structure or class names.
 - Lean on DialKit's features (store, versions, persistence, shortcuts, controls) instead of rebuilding them. Exception: the versions UI is own (`VersionMenu`), because DialKit's gallery and menu select versions themselves and so merge edits without asking.
-- DialKit's `--dial-*` CSS variables are undocumented. Read them only in the `.little-dialkit` block of `src/styles.css`, each with a fallback.
+- DialKit's `--dial-*` CSS variables are undocumented. Name them only in `src/styles.css`: read in the `.little-dialkit` block, each with a fallback; set (`--dial-row-height`, `--dial-row-gap` only) in the `.dialkit-root.little-dialkit` block. `build/dialVariables.ts` (a Vite plugin: dev server start, build, tests) warns for each one named there that `dialkit/vanilla/styles.css` no longer declares.
 - Own classes and storage keys are prefixed `little-`.
 - Prefer the library's controls over DialKit's defaults in every panel config, here and in projects using the library. A number is a curve slider: `curve([default, min, max, step])`, not DialKit's slider notation `[default, min, max, step]`. Use a plain slider only when asked for one. The demo keeps two plain sliders so that `NativeControl` rows of that kind stay covered.
 
@@ -28,6 +28,8 @@ Library that adds mapping curves, undo, a versions menu with edit tracking, pers
 - **Explicit merge:** `VersionMenu.select` asks (Save / Discard / Cancel) before leaving an edited version; Discard writes the held values back, then selects, as one undo step. `DialStore.loadPreset` called directly still merges silently: hosts select through `panel.versions.select`. `exportVersions` merges too (a save).
 - **Row buttons:** a control's row (`.little-row`) is the control, the curve button at full size (curve rows), then `RowButtons`: reset above apply to all versions (`.little-row-buttons`, a column as tall as the row, half a button wide). Both are always there; a disabled one is muted (`.little-button:disabled`). `NativeControl` wraps DialKit's renderer in such a row (actions hold no value: no buttons); `CurveRow` covers value and curve.
 - **Reset buttons:** `ResetButton` is enabled while the control differs. `ControlFolder` marks its title with `*`.
+- **Row size:** `--little-row-height` (28px) and `--little-row-gap` (4px) on `.little-dialkit` are own values, overridable by the host. Own elements read them; DialKit's controls follow through `--dial-row-height` and `--dial-row-gap`. Font sizes (13px), DialKit's folder headers and action buttons have no variable and keep their size.
+- **Slider press (mirrors DialKit's slider):** a press anywhere on the track drags, on the readout too, so the maximum is reachable from the right end. The readout takes a press only once the pointer has rested on it for 800 ms (`data-editable`: underline, text cursor) or while it has the focus. Enter on the focused track moves the focus to the readout. Not mirrored: DialKit's click snap to tenths, hash marks, rubber stretch.
 - **Accent:** `--little-accent` (`.little-dialkit` in `styles.css`, own value, overridable by the host) colors what differs from the usual: an enabled reset button, the curve button of a curve other than linear. DialKit's own controls and folder titles are not restyled.
 - **Action row:** `actionRow(actions)` returns a row of icon buttons sharing the panel's width (label as tooltip, icon as stroked paths in a 24 x 24 box), for `Panel.slot`.
 - **Prompt:** `Prompt` (`panel.prompt`) is the one place the panel asks: a `<dialog>` in the panel root opened with `showModal`, placed under the toolbar like the versions menu. Modal: the rest of the page is inert, and an open versions menu (an auto popover) closes. `ask(Question)`: text, a button per choice, Cancel; a choice closes the dialog, then runs. The first choice has the focus, so Enter takes it; Escape is the dialog's own cancel. The dialog stops its `keydown` events from bubbling: `Shortcuts` (on the window) would reset on the same Escape. A host listener on the window in the capture phase still sees them.
@@ -77,6 +79,7 @@ Library that adds mapping curves, undo, a versions menu with edit tracking, pers
 | `src/values.ts` | `Values` type, `withoutActions` |
 | `src/historyButtons.ts` | Undo / redo buttons, disabled by availability |
 | `src/styles.css` | Styles for own elements only |
+| `build/dialVariables.ts` | Vite plugin: warns when DialKit's stylesheet no longer declares a `--dial-*` variable named in `src/styles.css` |
 | `demo/main.ts`, `index.html` | Demo page for `npm run dev` |
 
 ## Storage

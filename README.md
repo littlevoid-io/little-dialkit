@@ -10,6 +10,7 @@ Additions to [DialKit](https://github.com/joshpuckett/dialkit) panels in plain T
 - A reset button on every control, enabled while it differs from the selected version
 - An apply-to-all-versions button on every control: after a confirm (the panel's prompt), writes its live value (a curve slider: value and curve) into every version, whatever they hold. Other edits on the selected version stay edits. Not an undo step. `panel.spread.ask(path)` does the same from code, `apply(path)` without asking; `panel.spread.onApply` is called with the versions after it (for example to write them to a file)
 - `--little-accent`: color of what is changed (enabled reset buttons, curves other than linear); set it on `.little-dialkit` to change it
+- `--little-row-height` (28px) and `--little-row-gap` (4px): height and spacing of the rows, DialKit's controls included; set them on `.little-dialkit` to change them
 - `actionRow([{ label, icon, run }])`: a row of icon buttons for `panel.slot`
 - Versions as plain data, to save to a file or send to a server
 

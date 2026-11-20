@@ -33,6 +33,7 @@
     "zustand": "^5.1.0"
   },
   "devDependencies": {
+    "@types/node": "^26.6.6",
     "dialkit": "^2.2.1",
     "release-it": "^21.1.2",
     "typescript": "^7.0.2",

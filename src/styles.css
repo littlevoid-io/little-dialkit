@@ -1,7 +1,9 @@
-/* DialKit's variables are undocumented: they are read here only, each with the dark theme's value to fall back on. */
+/* DialKit's variables are undocumented: they are named in this file only (`build/dialVariables.ts` warns when DialKit
+   no longer declares one), and read with the dark theme's value to fall back on. */
 .little-dialkit {
-  --little-row-height: var(--dial-row-height, 36px);
-  --little-row-gap: var(--dial-row-gap, 6px);
+  /* Row size: own values, smaller than DialKit's 36px and 6px. */
+  --little-row-height: 28px;
+  --little-row-gap: 4px;
   --little-radius: var(--dial-radius, 8px);
   --little-surface: var(--dial-surface, rgba(255, 255, 255, 0.05));
   --little-surface-hover: var(--dial-surface-hover, rgba(255, 255, 255, 0.1));
@@ -16,6 +18,12 @@
   --little-accent: #8fa6f7;
   --little-menu: var(--dial-dropdown-bg, #2a2a2a);
   --little-menu-shadow: var(--dial-shadow-dropdown, 0 8px 24px rgba(0, 0, 0, 0.4));
+}
+
+/* DialKit's controls and folders follow the row size. Two classes: ahead of DialKit's own declaration in any import order. */
+.dialkit-root.little-dialkit {
+  --dial-row-height: var(--little-row-height);
+  --dial-row-gap: var(--little-row-gap);
 }
 
 /* Floating shell: fixed at a corner, or at the dragged position (inline coordinates). Size and look come from DialKit's root folder. */
@@ -154,12 +162,15 @@
   border: none;
   border-bottom: 1px solid transparent;
   outline: none;
+  cursor: inherit;
   transition: color 0.15s, border-color 0.15s;
 }
 
-.little-slider-value:hover,
+/* The readout takes a press once the pointer has rested on it; until then a press there drags. */
+.little-slider-value[data-editable],
 .little-slider-value:focus {
   border-bottom-color: var(--little-text);
+  cursor: text;
 }
 
 .little-slider:hover .little-slider-value,

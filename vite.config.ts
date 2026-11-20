@@ -1,6 +1,8 @@
 import { defineConfig } from 'vitest/config';
+import { dialVariables } from './build/dialVariables';
 
 export default defineConfig({
+  plugins: [dialVariables()],
   // zundo imports `createStore` from the zustand root, which also loads the React bindings.
   resolve: { alias: [{ find: /^zustand$/, replacement: 'zustand/vanilla' }] },
   build: {

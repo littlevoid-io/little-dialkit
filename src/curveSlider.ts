@@ -6,6 +6,8 @@ import { element, type Mounted } from './dom';
 const STEPS: Record<string, number> = { ArrowLeft: -1, ArrowDown: -1, ArrowRight: 1, ArrowUp: 1 };
 /** Steps per key press while Shift is held. */
 const COARSE = 10;
+/** How long the pointer rests on the readout before a press there edits it, in milliseconds: DialKit's delay. */
+const REST = 800;
 
 /** Slider drawn at the curve position; the readout shows and edits the mapped value. */
 export class CurveSlider implements Mounted {
@@ -13,6 +15,7 @@ export class CurveSlider implements Mounted {
   private readonly fill = element('div', 'little-slider-fill');
   private readonly handle = element('div', 'little-slider-handle');
   private readonly input = element('input', 'little-slider-value');
+  private timer: number | undefined;
 
   constructor(host: HTMLElement, private readonly model: CurveModel) {
     this.track.tabIndex = 0;
@@ -39,6 +42,7 @@ export class CurveSlider implements Mounted {
   }
 
   public destroy(): void {
+    window.clearTimeout(this.timer);
     this.track.remove();
   }
 
@@ -48,17 +52,36 @@ export class CurveSlider implements Mounted {
     this.track.addEventListener('pointerup', () => delete this.track.dataset.dragging);
     this.track.addEventListener('pointercancel', () => delete this.track.dataset.dragging);
     this.track.addEventListener('keydown', (event) => this.step(event));
+    this.input.addEventListener('pointerenter', () => this.arm());
+    this.input.addEventListener('pointerleave', () => this.disarm());
     this.input.addEventListener('focus', () => this.input.select());
     this.input.addEventListener('change', () => this.commit());
     this.input.addEventListener('blur', () => this.update());
     this.input.addEventListener('keydown', (event) => this.edit(event));
   }
 
+  /** As in DialKit's slider, a press drags on the readout too: the readout takes it only once the pointer has rested there, or while it is edited. */
   private press(event: PointerEvent): void {
-    if (event.button !== 0 || event.target === this.input) return;
+    if (event.button !== 0 || this.editing(event)) return;
+    event.preventDefault();
+    this.track.focus({ preventScroll: true });
     this.track.setPointerCapture(event.pointerId);
     this.track.dataset.dragging = '';
     this.drag(event);
+  }
+
+  private editing(event: PointerEvent): boolean {
+    if (event.target !== this.input) return false;
+    return 'editable' in this.input.dataset || document.activeElement === this.input;
+  }
+
+  private arm(): void {
+    this.timer = window.setTimeout(() => { this.input.dataset.editable = ''; }, REST);
+  }
+
+  private disarm(): void {
+    window.clearTimeout(this.timer);
+    delete this.input.dataset.editable;
   }
 
   private drag(event: PointerEvent): void {
@@ -71,6 +94,7 @@ export class CurveSlider implements Mounted {
 
   private step(event: KeyboardEvent): void {
     if (event.target === this.input) return;
+    if (event.key === 'Enter') return this.input.focus();
     const value = this.keyValue(event);
     if (value === undefined) return;
     event.preventDefault();
