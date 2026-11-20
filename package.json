@@ -1,6 +1,6 @@
 {
   "name": "@littlevoid/little-dialkit",
-  "version": "0.1.9",
+  "version": "0.2.0",
   "description": "DialKit wrapper with mapping curves for sliders, undo and persistent view state",
   "license": "MIT",
   "type": "module",
